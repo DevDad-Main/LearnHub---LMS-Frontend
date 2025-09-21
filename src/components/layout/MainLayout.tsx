@@ -17,12 +17,17 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { courses } from "../../assets/courses";
+import CourseCard from "../course/CourseCard";
+import Home from "../home";
+import { useAppContext } from "../../context/AppContext";
 
-interface MainLayoutProps {
-  isAuthenticated?: boolean;
-}
+// interface MainLayoutProps {
+//   isAuthenticated?: boolean;
+// }
 
-const MainLayout = ({ isAuthenticated = false }: MainLayoutProps) => {
+const MainLayout = () => {
+  const { user } = useAppContext();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -117,7 +122,7 @@ const MainLayout = ({ isAuthenticated = false }: MainLayoutProps) => {
             </Button>
 
             {/* User Menu or Login */}
-            {isAuthenticated ? (
+            {user ? (
               <Button variant="ghost" size="icon" asChild>
                 <Link to="/dashboard">
                   <User className="h-5 w-5" />
@@ -189,7 +194,7 @@ const MainLayout = ({ isAuthenticated = false }: MainLayoutProps) => {
                   </div>
 
                   {/* Mobile Auth Buttons */}
-                  {!isAuthenticated && (
+                  {!user && (
                     <div className="mt-4 flex flex-col space-y-2">
                       <SheetClose asChild>
                         <Button variant="outline" asChild className="w-full">
@@ -205,7 +210,7 @@ const MainLayout = ({ isAuthenticated = false }: MainLayoutProps) => {
                   )}
 
                   {/* Mobile Dashboard Link when authenticated */}
-                  {isAuthenticated && (
+                  {user && (
                     <SheetClose asChild>
                       <Button variant="outline" asChild className="w-full">
                         <Link to="/dashboard">My Dashboard</Link>
@@ -221,6 +226,12 @@ const MainLayout = ({ isAuthenticated = false }: MainLayoutProps) => {
 
       {/* Main Content */}
       <main className="flex-1">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> */}
+        {/*   {courses.map((course) => ( */}
+        {/*     <CourseCard key={course.id} course={course} /> */}
+        {/*   ))} */}
+        {/* </div> */}
+        {/* <Home /> */}
         <Outlet />
       </main>
 

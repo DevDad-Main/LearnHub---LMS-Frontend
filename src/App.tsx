@@ -8,34 +8,54 @@ import Dashboard from "./pages/dashboard";
 import CourseDetails from "./pages/course/course-details";
 import Cart from "./pages/cart";
 import routes from "tempo-routes";
+import { useAppContext } from "./context/AppContext";
 
 function App() {
   const location = useLocation();
-  const isAuthPage = location.pathname === "/login" || location.pathname === "/register";
+  const { user } = useAppContext();
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/register";
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
-      {isAuthPage ? (
-        <>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-        </>
-      ) : (
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/course/:courseId" element={<CourseDetails />} />
-            <Route path="/cart" element={<Cart />} />
-          </Routes>
-          {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-        </MainLayout>
-      )}
+      <Routes>
+        {/* Auth pages (no MainLayout) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Everything else inside MainLayout */}
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/course/:id" element={<CourseDetails />} />
+          <Route path="/cart" element={<Cart />} />
+        </Route>
+      </Routes>
     </Suspense>
   );
+  // return (
+  //   <Suspense fallback={<p>Loading...</p>}>
+  //     {!user ? (
+  //       <>
+  //         <Routes>
+  //           <Route path="/login" element={<Login />} />
+  //           <Route path="/register" element={<Register />} />
+  //         </Routes>
+  //         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+  //       </>
+  //     ) : (
+  //       <MainLayout>
+  //         <Routes>
+  //           <Route path="/" element={<Home />} />
+  //           <Route path="/dashboard" element={<Dashboard />} />
+  //           <Route path="/course/:id" element={<CourseDetails />} />
+  //           <Route path="/cart" element={<Cart />} />
+  //         </Routes>
+  //         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+  //       </MainLayout>
+  //     )}
+  //   </Suspense>
+  // );
 }
 
 export default App;

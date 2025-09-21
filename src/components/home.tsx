@@ -6,16 +6,16 @@ import CourseCard from "./course/CourseCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { 
-  TrendingUp, 
-  Clock, 
-  Eye, 
-  Star, 
-  Users, 
+import {
+  TrendingUp,
+  Clock,
+  Eye,
+  Star,
+  Users,
   PlayCircle,
   BookOpen,
   Award,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 const categories = [
@@ -137,10 +137,12 @@ const recentlyViewed = [
     rating: 4.6,
     reviewCount: 892,
     price: 79.99,
-    thumbnail: "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80",
-    description: "Learn Vue.js from scratch and build amazing single-page applications.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1593720213428-28a5b9e94613?w=800&q=80",
+    description:
+      "Learn Vue.js from scratch and build amazing single-page applications.",
     lastViewed: "2 days ago",
-    progress: 35
+    progress: 35,
   },
   {
     id: 10,
@@ -149,10 +151,12 @@ const recentlyViewed = [
     rating: 4.8,
     reviewCount: 1456,
     price: 99.99,
-    thumbnail: "https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800&q=80",
-    description: "Master containerization and orchestration with Docker and Kubernetes.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800&q=80",
+    description:
+      "Master containerization and orchestration with Docker and Kubernetes.",
     lastViewed: "1 week ago",
-    progress: 12
+    progress: 12,
   },
   {
     id: 11,
@@ -161,11 +165,13 @@ const recentlyViewed = [
     rating: 4.7,
     reviewCount: 743,
     price: 84.99,
-    thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-    description: "Build modern APIs with GraphQL and integrate with React applications.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
+    description:
+      "Build modern APIs with GraphQL and integrate with React applications.",
     lastViewed: "3 days ago",
-    progress: 67
-  }
+    progress: 67,
+  },
 ];
 
 // Mock trending courses
@@ -177,10 +183,12 @@ const trendingCourses = [
     rating: 4.9,
     reviewCount: 2847,
     price: 129.99,
-    thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
-    description: "Learn to integrate AI and ChatGPT into your development workflow.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
+    description:
+      "Learn to integrate AI and ChatGPT into your development workflow.",
     trending: true,
-    enrollmentGrowth: "+245%"
+    enrollmentGrowth: "+245%",
   },
   {
     id: 13,
@@ -189,10 +197,12 @@ const trendingCourses = [
     rating: 4.8,
     reviewCount: 1923,
     price: 94.99,
-    thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
-    description: "Master the latest Next.js features including App Router and Server Components.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80",
+    description:
+      "Master the latest Next.js features including App Router and Server Components.",
     trending: true,
-    enrollmentGrowth: "+189%"
+    enrollmentGrowth: "+189%",
   },
   {
     id: 14,
@@ -201,11 +211,13 @@ const trendingCourses = [
     rating: 4.7,
     reviewCount: 1567,
     price: 109.99,
-    thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80",
-    description: "Essential cybersecurity skills for developers and IT professionals.",
+    thumbnail:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80",
+    description:
+      "Essential cybersecurity skills for developers and IT professionals.",
     trending: true,
-    enrollmentGrowth: "+156%"
-  }
+    enrollmentGrowth: "+156%",
+  },
 ];
 
 // Mock recommended courses
@@ -217,9 +229,11 @@ const recommendedCourses = [
     rating: 4.8,
     reviewCount: 1234,
     price: 89.99,
-    thumbnail: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
-    description: "Master TypeScript and write better, more maintainable JavaScript code.",
-    matchReason: "Based on your interest in JavaScript"
+    thumbnail:
+      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
+    description:
+      "Master TypeScript and write better, more maintainable JavaScript code.",
+    matchReason: "Based on your interest in JavaScript",
   },
   {
     id: 16,
@@ -228,10 +242,11 @@ const recommendedCourses = [
     rating: 4.6,
     reviewCount: 2156,
     price: 119.99,
-    thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80",
     description: "Get AWS certified and learn cloud computing fundamentals.",
-    matchReason: "Popular with web developers"
-  }
+    matchReason: "Popular with web developers",
+  },
 ];
 
 const Home = () => {
@@ -250,7 +265,7 @@ const Home = () => {
                 from expert instructors.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/courses">
+                <Link to={"/courses"}>
                   <Button size="lg" className="w-full sm:w-auto">
                     Explore courses
                   </Button>
@@ -285,7 +300,10 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {recentlyViewed.map((course) => (
-                <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={course.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <div className="relative">
                     <img
                       src={course.thumbnail}
@@ -298,13 +316,20 @@ const Home = () => {
                         Continue
                       </Button>
                     </div>
-                    <Badge className="absolute top-2 right-2" variant="secondary">
+                    <Badge
+                      className="absolute top-2 right-2"
+                      variant="secondary"
+                    >
                       {course.progress}% complete
                     </Badge>
                   </div>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">By {course.instructor}</p>
+                    <h3 className="font-semibold line-clamp-2 mb-2">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      By {course.instructor}
+                    </p>
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span>Last viewed {course.lastViewed}</span>
                       <div className="flex items-center">
@@ -314,8 +339,8 @@ const Home = () => {
                     </div>
                     <div className="mt-3">
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all" 
+                        <div
+                          className="bg-primary h-2 rounded-full transition-all"
                           style={{ width: `${course.progress}%` }}
                         ></div>
                       </div>
@@ -343,7 +368,10 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {trendingCourses.map((course) => (
-                <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={course.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <div className="relative">
                     <img
                       src={course.thumbnail}
@@ -354,20 +382,29 @@ const Home = () => {
                       <TrendingUp className="h-3 w-3 mr-1" />
                       Trending
                     </Badge>
-                    <Badge className="absolute top-2 right-2" variant="secondary">
+                    <Badge
+                      className="absolute top-2 right-2"
+                      variant="secondary"
+                    >
                       {course.enrollmentGrowth}
                     </Badge>
                   </div>
                   <CardContent className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">By {course.instructor}</p>
+                    <h3 className="font-semibold line-clamp-2 mb-2">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      By {course.instructor}
+                    </p>
                     <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                       {course.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-sm">
                         <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                        <span className="font-medium mr-1">{course.rating}</span>
+                        <span className="font-medium mr-1">
+                          {course.rating}
+                        </span>
                         <span className="text-muted-foreground">
                           ({course.reviewCount.toLocaleString()})
                         </span>
@@ -411,7 +448,10 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {recommendedCourses.map((course) => (
-                <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={course.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <div className="flex">
                     <div className="w-48 h-32">
                       <img
@@ -424,15 +464,21 @@ const Home = () => {
                       <Badge variant="outline" className="mb-2 text-xs">
                         {course.matchReason}
                       </Badge>
-                      <h3 className="font-semibold line-clamp-2 mb-2">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">By {course.instructor}</p>
+                      <h3 className="font-semibold line-clamp-2 mb-2">
+                        {course.title}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        By {course.instructor}
+                      </p>
                       <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                         {course.description}
                       </p>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center text-sm">
                           <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                          <span className="font-medium mr-1">{course.rating}</span>
+                          <span className="font-medium mr-1">
+                            {course.rating}
+                          </span>
                           <span className="text-muted-foreground">
                             ({course.reviewCount.toLocaleString()})
                           </span>
@@ -522,9 +568,12 @@ const Home = () => {
         <section className="py-16">
           <div className="container">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Join Millions of Learners</h2>
+              <h2 className="text-3xl font-bold mb-4">
+                Join Millions of Learners
+              </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Our platform has helped students worldwide achieve their learning goals
+                Our platform has helped students worldwide achieve their
+                learning goals
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">

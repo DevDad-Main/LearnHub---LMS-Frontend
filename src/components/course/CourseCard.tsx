@@ -12,10 +12,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Users } from "lucide-react";
 
-interface Course {
-  id: number;
+interface Instructor {
+  name: string;
   title: string;
-  instructor: string;
+  avatar: string;
+  rating: number;
+  students: number;
+  courses: number;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  instructor: Instructor;
   rating: number;
   reviewCount: number;
   price: number;
@@ -50,14 +59,16 @@ const CourseCard = ({ course }: CourseCardProps) => {
           {course.title}
         </CardTitle>
         <CardDescription className="text-sm">
-          By {course.instructor}
+          By {course.instructor?.name}
         </CardDescription>
       </CardHeader>
       <CardContent className="pb-3">
         <div className="flex items-center mb-3">
           <div className="flex items-center mr-4">
             <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-            <span className="font-medium text-sm mr-1">{course.rating.toFixed(1)}</span>
+            <span className="font-medium text-sm mr-1">
+              {course.rating.toFixed(1)}
+            </span>
             <span className="text-xs text-muted-foreground">
               ({course.reviewCount.toLocaleString()})
             </span>
@@ -69,14 +80,14 @@ const CourseCard = ({ course }: CourseCardProps) => {
             </div>
           )}
         </div>
-        
+
         {course.duration && (
           <div className="flex items-center mb-3 text-xs text-muted-foreground">
             <Clock className="h-3 w-3 mr-1" />
             {course.duration}
           </div>
         )}
-        
+
         <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
           {course.description}
         </p>

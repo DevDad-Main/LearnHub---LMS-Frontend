@@ -1,42 +1,50 @@
 import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Star, 
-  Clock, 
-  Users, 
-  Award, 
-  Play, 
-  Lock, 
+import {
+  Star,
+  Clock,
+  Users,
+  Award,
+  Play,
+  Lock,
   CheckCircle,
   Globe,
   Smartphone,
   Download,
-  Infinity
+  Infinity,
 } from "lucide-react";
 
 const CourseDetails = () => {
-  const { courseId } = useParams();
+  const { id } = useParams();
 
   // Mock course data - in real app this would come from API
   const course = {
-    id: courseId || "1",
+    id: id || "1",
     title: "Complete React Developer in 2024",
-    subtitle: "Learn React, Hooks, Redux, React Router, Next.js, Best Practices and build amazing projects",
+    subtitle:
+      "Learn React, Hooks, Redux, React Router, Next.js, Best Practices and build amazing projects",
     instructor: {
       name: "John Smith",
       title: "Senior Full Stack Developer",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
       rating: 4.8,
       students: 125000,
-      courses: 12
+      courses: 12,
     },
-    thumbnail: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80",
+    thumbnail:
+      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80",
     price: 89.99,
     originalPrice: 199.99,
     rating: 4.7,
@@ -58,12 +66,12 @@ Perfect for beginners and intermediate developers looking to level up their Reac
       "Apply for high-paid jobs or work as a freelancer in one the most-demanded sectors",
       "Learn all about React Hooks and React Components",
       "Master Redux for state management",
-      "Build real-world projects that you can add to your portfolio"
+      "Build real-world projects that you can add to your portfolio",
     ],
     requirements: [
       "Basic JavaScript knowledge is required",
       "NO prior React or any other JS framework experience is required!",
-      "Basic HTML + CSS knowledge helps but is not a must-have"
+      "Basic HTML + CSS knowledge helps but is not a must-have",
     ],
     curriculum: [
       {
@@ -73,13 +81,29 @@ Perfect for beginners and intermediate developers looking to level up their Reac
         lessons: [
           { title: "Course Introduction", duration: "5:32", isPreview: true },
           { title: "What is React?", duration: "8:45", isPreview: true },
-          { title: "Setting up the Development Environment", duration: "12:15", isPreview: false },
-          { title: "Creating Your First React App", duration: "15:30", isPreview: false },
+          {
+            title: "Setting up the Development Environment",
+            duration: "12:15",
+            isPreview: false,
+          },
+          {
+            title: "Creating Your First React App",
+            duration: "15:30",
+            isPreview: false,
+          },
           { title: "Understanding JSX", duration: "18:22", isPreview: false },
-          { title: "Components and Props", duration: "14:45", isPreview: false },
-          { title: "State and Event Handling", duration: "16:33", isPreview: false },
-          { title: "Section Summary", duration: "3:45", isPreview: false }
-        ]
+          {
+            title: "Components and Props",
+            duration: "14:45",
+            isPreview: false,
+          },
+          {
+            title: "State and Event Handling",
+            duration: "16:33",
+            isPreview: false,
+          },
+          { title: "Section Summary", duration: "3:45", isPreview: false },
+        ],
       },
       {
         section: "React Fundamentals",
@@ -89,31 +113,47 @@ Perfect for beginners and intermediate developers looking to level up their Reac
           { title: "Component Lifecycle", duration: "22:15", isPreview: false },
           { title: "Handling Forms", duration: "18:30", isPreview: false },
           { title: "Lists and Keys", duration: "15:45", isPreview: false },
-          { title: "Conditional Rendering", duration: "12:20", isPreview: false },
+          {
+            title: "Conditional Rendering",
+            duration: "12:20",
+            isPreview: false,
+          },
           { title: "Styling Components", duration: "20:10", isPreview: false },
-          { title: "React Hooks Introduction", duration: "25:30", isPreview: false },
+          {
+            title: "React Hooks Introduction",
+            duration: "25:30",
+            isPreview: false,
+          },
           { title: "useState Hook", duration: "18:45", isPreview: false },
           { title: "useEffect Hook", duration: "24:15", isPreview: false },
           { title: "Custom Hooks", duration: "19:30", isPreview: false },
           { title: "Context API", duration: "21:45", isPreview: false },
           { title: "Error Boundaries", duration: "16:20", isPreview: false },
-          { title: "Section Project", duration: "35:40", isPreview: false }
-        ]
+          { title: "Section Project", duration: "35:40", isPreview: false },
+        ],
       },
       {
         section: "Advanced React Concepts",
         lectures: 15,
         duration: "3h 20m",
         lessons: [
-          { title: "Performance Optimization", duration: "28:15", isPreview: false },
-          { title: "React.memo and useMemo", duration: "22:30", isPreview: false },
+          {
+            title: "Performance Optimization",
+            duration: "28:15",
+            isPreview: false,
+          },
+          {
+            title: "React.memo and useMemo",
+            duration: "22:30",
+            isPreview: false,
+          },
           { title: "useCallback Hook", duration: "18:45", isPreview: false },
           { title: "Code Splitting", duration: "20:10", isPreview: false },
           { title: "Lazy Loading", duration: "16:30", isPreview: false },
           // ... more lessons
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   };
 
   return (
@@ -131,9 +171,7 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                 <h1 className="text-3xl md:text-4xl font-bold mb-4">
                   {course.title}
                 </h1>
-                <p className="text-lg text-slate-300 mb-6">
-                  {course.subtitle}
-                </p>
+                <p className="text-lg text-slate-300 mb-6">{course.subtitle}</p>
               </div>
 
               <div className="flex flex-wrap items-center gap-4 mb-6">
@@ -161,8 +199,12 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold">Created by {course.instructor.name}</p>
-                  <p className="text-slate-300 text-sm">{course.instructor.title}</p>
+                  <p className="font-semibold">
+                    Created by {course.instructor.name}
+                  </p>
+                  <p className="text-slate-300 text-sm">
+                    {course.instructor.title}
+                  </p>
                 </div>
               </div>
 
@@ -194,7 +236,9 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <span className="text-3xl font-bold">${course.price}</span>
+                      <span className="text-3xl font-bold">
+                        ${course.price}
+                      </span>
                       <span className="text-lg text-muted-foreground line-through ml-2">
                         ${course.originalPrice}
                       </span>
@@ -252,7 +296,11 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardHeader>
                     <CardTitle>Course content</CardTitle>
                     <CardDescription>
-                      {course.curriculum.reduce((acc, section) => acc + section.lectures, 0)} lectures • {course.duration} total length
+                      {course.curriculum.reduce(
+                        (acc, section) => acc + section.lectures,
+                        0,
+                      )}{" "}
+                      lectures • {course.duration} total length
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -266,26 +314,42 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                             </span>
                           </div>
                           <div className="space-y-2">
-                            {section.lessons.slice(0, 3).map((lesson, lessonIndex) => (
-                              <div key={lessonIndex} className="flex items-center justify-between text-sm">
-                                <div className="flex items-center">
-                                  {lesson.isPreview ? (
-                                    <Play className="h-4 w-4 mr-2 text-primary" />
-                                  ) : (
-                                    <Lock className="h-4 w-4 mr-2 text-muted-foreground" />
-                                  )}
-                                  <span className={lesson.isPreview ? "text-primary" : "text-muted-foreground"}>
-                                    {lesson.title}
+                            {section.lessons
+                              .slice(0, 3)
+                              .map((lesson, lessonIndex) => (
+                                <div
+                                  key={lessonIndex}
+                                  className="flex items-center justify-between text-sm"
+                                >
+                                  <div className="flex items-center">
+                                    {lesson.isPreview ? (
+                                      <Play className="h-4 w-4 mr-2 text-primary" />
+                                    ) : (
+                                      <Lock className="h-4 w-4 mr-2 text-muted-foreground" />
+                                    )}
+                                    <span
+                                      className={
+                                        lesson.isPreview
+                                          ? "text-primary"
+                                          : "text-muted-foreground"
+                                      }
+                                    >
+                                      {lesson.title}
+                                    </span>
+                                    {lesson.isPreview && (
+                                      <Badge
+                                        variant="outline"
+                                        className="ml-2 text-xs"
+                                      >
+                                        Preview
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <span className="text-muted-foreground">
+                                    {lesson.duration}
                                   </span>
-                                  {lesson.isPreview && (
-                                    <Badge variant="outline" className="ml-2 text-xs">
-                                      Preview
-                                    </Badge>
-                                  )}
                                 </div>
-                                <span className="text-muted-foreground">{lesson.duration}</span>
-                              </div>
-                            ))}
+                              ))}
                             {section.lessons.length > 3 && (
                               <p className="text-sm text-muted-foreground">
                                 + {section.lessons.length - 3} more lectures
@@ -325,9 +389,13 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      {course.description.split('\n\n').map((paragraph, index) => (
-                        <p key={index} className="mb-4">{paragraph}</p>
-                      ))}
+                      {course.description
+                        .split("\n\n")
+                        .map((paragraph, index) => (
+                          <p key={index} className="mb-4">
+                            {paragraph}
+                          </p>
+                        ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -338,7 +406,11 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardHeader>
                     <CardTitle>Course Curriculum</CardTitle>
                     <CardDescription>
-                      {course.curriculum.reduce((acc, section) => acc + section.lectures, 0)} lectures • {course.duration} total length
+                      {course.curriculum.reduce(
+                        (acc, section) => acc + section.lectures,
+                        0,
+                      )}{" "}
+                      lectures • {course.duration} total length
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -346,30 +418,46 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                       {course.curriculum.map((section, index) => (
                         <div key={index} className="border rounded-lg p-4">
                           <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-semibold text-lg">{section.section}</h4>
+                            <h4 className="font-semibold text-lg">
+                              {section.section}
+                            </h4>
                             <span className="text-sm text-muted-foreground">
                               {section.lectures} lectures • {section.duration}
                             </span>
                           </div>
                           <div className="space-y-3">
                             {section.lessons.map((lesson, lessonIndex) => (
-                              <div key={lessonIndex} className="flex items-center justify-between p-2 hover:bg-muted/50 rounded">
+                              <div
+                                key={lessonIndex}
+                                className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
+                              >
                                 <div className="flex items-center">
                                   {lesson.isPreview ? (
                                     <Play className="h-4 w-4 mr-3 text-primary" />
                                   ) : (
                                     <Lock className="h-4 w-4 mr-3 text-muted-foreground" />
                                   )}
-                                  <span className={lesson.isPreview ? "text-primary" : "text-muted-foreground"}>
+                                  <span
+                                    className={
+                                      lesson.isPreview
+                                        ? "text-primary"
+                                        : "text-muted-foreground"
+                                    }
+                                  >
                                     {lesson.title}
                                   </span>
                                   {lesson.isPreview && (
-                                    <Badge variant="outline" className="ml-2 text-xs">
+                                    <Badge
+                                      variant="outline"
+                                      className="ml-2 text-xs"
+                                    >
                                       Preview
                                     </Badge>
                                   )}
                                 </div>
-                                <span className="text-muted-foreground text-sm">{lesson.duration}</span>
+                                <span className="text-muted-foreground text-sm">
+                                  {lesson.duration}
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -392,8 +480,12 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                         <AvatarFallback>JS</AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="text-xl font-semibold mb-1">{course.instructor.name}</h3>
-                        <p className="text-muted-foreground mb-3">{course.instructor.title}</p>
+                        <h3 className="text-xl font-semibold mb-1">
+                          {course.instructor.name}
+                        </h3>
+                        <p className="text-muted-foreground mb-3">
+                          {course.instructor.title}
+                        </p>
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 text-yellow-500 mr-1" />
@@ -401,7 +493,8 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                           </div>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            {course.instructor.students.toLocaleString()} Students
+                            {course.instructor.students.toLocaleString()}{" "}
+                            Students
                           </div>
                           <div className="flex items-center">
                             <Play className="h-4 w-4 mr-1" />
@@ -412,13 +505,17 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                     </div>
                     <div className="prose prose-sm max-w-none">
                       <p>
-                        John is a senior full-stack developer with over 8 years of experience in web development. 
-                        He has worked with companies ranging from startups to Fortune 500 companies, building 
-                        scalable web applications using modern technologies.
+                        John is a senior full-stack developer with over 8 years
+                        of experience in web development. He has worked with
+                        companies ranging from startups to Fortune 500
+                        companies, building scalable web applications using
+                        modern technologies.
                       </p>
                       <p>
-                        His expertise includes React, Node.js, Python, and cloud technologies. John is passionate 
-                        about teaching and has helped thousands of students transition into successful tech careers.
+                        His expertise includes React, Node.js, Python, and cloud
+                        technologies. John is passionate about teaching and has
+                        helped thousands of students transition into successful
+                        tech careers.
                       </p>
                     </div>
                   </CardContent>
@@ -430,7 +527,8 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardHeader>
                     <CardTitle>Student Reviews</CardTitle>
                     <CardDescription>
-                      {course.reviewCount.toLocaleString()} reviews for this course
+                      {course.reviewCount.toLocaleString()} reviews for this
+                      course
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -438,7 +536,9 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                       {/* Review Summary */}
                       <div className="flex items-center space-x-8">
                         <div className="text-center">
-                          <div className="text-4xl font-bold text-yellow-500">{course.rating}</div>
+                          <div className="text-4xl font-bold text-yellow-500">
+                            {course.rating}
+                          </div>
                           <div className="flex items-center justify-center mb-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                               <Star
@@ -451,22 +551,35 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                               />
                             ))}
                           </div>
-                          <div className="text-sm text-muted-foreground">Course Rating</div>
+                          <div className="text-sm text-muted-foreground">
+                            Course Rating
+                          </div>
                         </div>
                         <div className="flex-1">
                           {[5, 4, 3, 2, 1].map((rating) => (
-                            <div key={rating} className="flex items-center mb-1">
+                            <div
+                              key={rating}
+                              className="flex items-center mb-1"
+                            >
                               <span className="text-sm w-8">{rating}★</span>
                               <div className="flex-1 h-2 bg-muted rounded-full mx-2">
                                 <div
                                   className="h-full bg-yellow-500 rounded-full"
                                   style={{
-                                    width: `${rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 7 : rating === 2 ? 2 : 1}%`
+                                    width: `${rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 7 : rating === 2 ? 2 : 1}%`,
                                   }}
                                 ></div>
                               </div>
                               <span className="text-sm text-muted-foreground w-8">
-                                {rating === 5 ? "70%" : rating === 4 ? "20%" : rating === 3 ? "7%" : rating === 2 ? "2%" : "1%"}
+                                {rating === 5
+                                  ? "70%"
+                                  : rating === 4
+                                    ? "20%"
+                                    : rating === 3
+                                      ? "7%"
+                                      : rating === 2
+                                        ? "2%"
+                                        : "1%"}
                               </span>
                             </div>
                           ))}
@@ -478,15 +591,22 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                       {/* Individual Reviews */}
                       <div className="space-y-6">
                         {[1, 2, 3].map((review) => (
-                          <div key={review} className="border-b pb-6 last:border-b-0">
+                          <div
+                            key={review}
+                            className="border-b pb-6 last:border-b-0"
+                          >
                             <div className="flex items-start space-x-4">
                               <Avatar>
-                                <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${review}`} />
+                                <AvatarImage
+                                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${review}`}
+                                />
                                 <AvatarFallback>U{review}</AvatarFallback>
                               </Avatar>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-2">
-                                  <span className="font-semibold">Student {review}</span>
+                                  <span className="font-semibold">
+                                    Student {review}
+                                  </span>
                                   <div className="flex items-center">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                       <Star
@@ -495,12 +615,16 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                                       />
                                     ))}
                                   </div>
-                                  <span className="text-sm text-muted-foreground">2 weeks ago</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    2 weeks ago
+                                  </span>
                                 </div>
                                 <p className="text-sm">
-                                  Excellent course! The instructor explains everything clearly and the projects 
-                                  are very practical. I learned so much about React and feel confident building 
-                                  my own applications now.
+                                  Excellent course! The instructor explains
+                                  everything clearly and the projects are very
+                                  practical. I learned so much about React and
+                                  feel confident building my own applications
+                                  now.
                                 </p>
                               </div>
                             </div>
@@ -534,7 +658,9 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <span className="text-3xl font-bold">${course.price}</span>
+                      <span className="text-3xl font-bold">
+                        ${course.price}
+                      </span>
                       <span className="text-lg text-muted-foreground line-through ml-2">
                         ${course.originalPrice}
                       </span>
