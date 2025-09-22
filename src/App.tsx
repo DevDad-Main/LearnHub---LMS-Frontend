@@ -10,6 +10,8 @@ import Cart from "./pages/cart";
 import routes from "tempo-routes";
 import { useAppContext } from "./context/AppContext";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import CourseVideoPlayerPage from "./components/course/CourseVideoPlayerPage";
+import CourseForm from "./components/admin/CourseForm.js";
 
 function App() {
   const location = useLocation();
@@ -40,6 +42,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/learn/:id"
+            element={
+              <ProtectedRoute user={user}>
+                <CourseVideoPlayerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/course/add-course"
+            element={
+              <ProtectedRoute user={user}>
+                <CourseForm />
               </ProtectedRoute>
             }
           />

@@ -32,7 +32,7 @@ const categories = [
 
 const featuredCourses = [
   {
-    id: 1,
+    id: "1",
     title: "Complete Web Development Bootcamp",
     instructor: "Jane Smith",
     rating: 4.8,
@@ -44,7 +44,7 @@ const featuredCourses = [
       "Learn HTML, CSS, JavaScript, React, Node.js and more to become a full-stack web developer.",
   },
   {
-    id: 2,
+    id: "2",
     title: "Python for Data Science and Machine Learning",
     instructor: "John Doe",
     rating: 4.9,
@@ -56,7 +56,7 @@ const featuredCourses = [
       "Master Python for data analysis, visualization, machine learning, and deep learning.",
   },
   {
-    id: 3,
+    id: "3",
     title: "iOS App Development with Swift",
     instructor: "Sarah Johnson",
     rating: 4.7,
@@ -68,7 +68,7 @@ const featuredCourses = [
       "Build iOS apps from scratch using Swift and Xcode. Create your own apps for the App Store.",
   },
   {
-    id: 4,
+    id: "4",
     title: "Digital Marketing Masterclass",
     instructor: "Michael Brown",
     rating: 4.6,
@@ -80,7 +80,7 @@ const featuredCourses = [
       "Learn SEO, social media marketing, email campaigns, and more to grow your business online.",
   },
   {
-    id: 5,
+    id: "5",
     title: "Complete React Developer Course",
     instructor: "Alex Wilson",
     rating: 4.8,
@@ -92,7 +92,7 @@ const featuredCourses = [
       "Master React from basics to advanced concepts. Build real-world projects and get job-ready.",
   },
   {
-    id: 6,
+    id: "6",
     title: "UI/UX Design Fundamentals",
     instructor: "Emma Davis",
     rating: 4.7,
@@ -104,7 +104,7 @@ const featuredCourses = [
       "Learn design principles, user research, wireframing, and prototyping to create amazing user experiences.",
   },
   {
-    id: 7,
+    id: "7",
     title: "Node.js Backend Development",
     instructor: "David Chen",
     rating: 4.6,
@@ -116,7 +116,7 @@ const featuredCourses = [
       "Build scalable backend applications with Node.js, Express, and MongoDB. Learn REST APIs and authentication.",
   },
   {
-    id: 8,
+    id: "8",
     title: "Advanced JavaScript Concepts",
     instructor: "Lisa Rodriguez",
     rating: 4.9,
@@ -251,7 +251,7 @@ const recommendedCourses = [
 ];
 
 const Home = () => {
-  const { user } = useAppContext();
+  const { user, navigate } = useAppContext();
 
   return (
     <div className="min-h-screen bg-background">
@@ -287,9 +287,9 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Recently Viewed Section */}
+        {/* Continue Learning Section */}
         {user ? (
-          <section className="py-16 bg-muted/20">
+          <section className="py-8 bg-muted/20">
             <div className="container">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center">
@@ -315,7 +315,11 @@ const Home = () => {
                         className="w-full h-48 object-cover"
                       />
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <Button size="lg" className="rounded-full">
+                        <Button
+                          onClick={() => navigate(`/course/learn/${course.id}`)}
+                          size="lg"
+                          className="rounded-full"
+                        >
                           <PlayCircle className="h-6 w-6 mr-2" />
                           Continue
                         </Button>
@@ -358,7 +362,7 @@ const Home = () => {
         ) : null}
 
         {/* Trending Courses */}
-        <section className="py-16">
+        <section className="py-8">
           <div className="container">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center">
