@@ -9,6 +9,7 @@ import CourseDetails from "./pages/course/course-details";
 import Cart from "./pages/cart";
 import routes from "tempo-routes";
 import { useAppContext } from "./context/AppContext";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
   const location = useLocation();
@@ -26,9 +27,23 @@ function App() {
         {/* Everything else inside MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute user={user}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute>
+                <Cart />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/course/:id" element={<CourseDetails />} />
-          <Route path="/cart" element={<Cart />} />
         </Route>
       </Routes>
     </Suspense>

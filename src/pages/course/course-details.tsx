@@ -38,7 +38,8 @@ const CourseDetails = () => {
     instructor: {
       name: "John Smith",
       title: "Senior Full Stack Developer",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=john",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=adccv4254561",
+      // avatar: "../../assets/Default Avatar",
       rating: 4.8,
       students: 125000,
       courses: 12,

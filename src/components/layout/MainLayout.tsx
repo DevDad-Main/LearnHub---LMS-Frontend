@@ -16,6 +16,12 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { courses } from "../../assets/courses";
 import CourseCard from "../course/CourseCard";
@@ -27,7 +33,7 @@ import { useAppContext } from "../../context/AppContext";
 // }
 
 const MainLayout = () => {
-  const { user } = useAppContext();
+  const { user, handleLogout } = useAppContext();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -123,11 +129,21 @@ const MainLayout = () => {
 
             {/* User Menu or Login */}
             {user ? (
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/dashboard">
-                  <User className="h-5 w-5" />
-                </Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div className="hidden md:flex md:items-center md:space-x-2">
                 <Button variant="ghost" asChild>
@@ -141,7 +157,6 @@ const MainLayout = () => {
                 </Button>
               </div>
             )}
-
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>

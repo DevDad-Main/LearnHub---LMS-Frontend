@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { googleLogout } from "@react-oauth/google";
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
@@ -50,6 +51,32 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
+  //#region Handle User Logout
+  const handleLogout = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/users/signout");
+      console.log("Clicked Logout button");
+
+      if (data.success) {
+        if (user?.authProvider === "google") {
+          // clears the Google OAuth session and above becuase if we have a success we clear the cookies aswell
+          googleLogout();
+        }
+
+        setUser(null);
+        setDraftOrder(null);
+        setCartItems([]);
+        navigate("/");
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+  //#endregion
+
   useEffect(() => {
     fetchUser();
   }, []);
@@ -61,6 +88,7 @@ export const AppContextProvider = ({ children }) => {
     axios,
     fetchUser,
     responseMessage,
+    handleLogout,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
