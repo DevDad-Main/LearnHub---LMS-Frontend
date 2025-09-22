@@ -443,60 +443,62 @@ const Home = () => {
         </section>
 
         {/* Recommended for You */}
-        <section className="py-16">
-          <div className="container">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <Award className="h-6 w-6 mr-2 text-primary" />
-                <h2 className="text-3xl font-bold">Recommended for You</h2>
+        {user ? (
+          <section className="py-16">
+            <div className="container">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center">
+                  <Award className="h-6 w-6 mr-2 text-primary" />
+                  <h2 className="text-3xl font-bold">Recommended for You</h2>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {recommendedCourses.map((course) => (
+                  <Card
+                    key={course.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="flex">
+                      <div className="w-48 h-32">
+                        <img
+                          src={course.thumbnail}
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <CardContent className="flex-1 p-4">
+                        <Badge variant="outline" className="mb-2 text-xs">
+                          {course.matchReason}
+                        </Badge>
+                        <h3 className="font-semibold line-clamp-2 mb-2">
+                          {course.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          By {course.instructor}
+                        </p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
+                          {course.description}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm">
+                            <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
+                            <span className="font-medium mr-1">
+                              {course.rating}
+                            </span>
+                            <span className="text-muted-foreground">
+                              ({course.reviewCount.toLocaleString()})
+                            </span>
+                          </div>
+                          <span className="font-bold">${course.price}</span>
+                        </div>
+                      </CardContent>
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {recommendedCourses.map((course) => (
-                <Card
-                  key={course.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex">
-                    <div className="w-48 h-32">
-                      <img
-                        src={course.thumbnail}
-                        alt={course.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <CardContent className="flex-1 p-4">
-                      <Badge variant="outline" className="mb-2 text-xs">
-                        {course.matchReason}
-                      </Badge>
-                      <h3 className="font-semibold line-clamp-2 mb-2">
-                        {course.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        By {course.instructor}
-                      </p>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                        {course.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                          <span className="font-medium mr-1">
-                            {course.rating}
-                          </span>
-                          <span className="text-muted-foreground">
-                            ({course.reviewCount.toLocaleString()})
-                          </span>
-                        </div>
-                        <span className="font-bold">${course.price}</span>
-                      </div>
-                    </CardContent>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
+        ) : null}
 
         {/* Categories Section */}
         <section className="py-16 bg-muted/30">
