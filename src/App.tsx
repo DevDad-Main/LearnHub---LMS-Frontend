@@ -12,6 +12,7 @@ import { useAppContext } from "./context/AppContext";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CourseVideoPlayerPage from "./components/course/CourseVideoPlayerPage";
 import CourseForm from "./components/admin/CourseForm.js";
+import AdminDashboard from "./components/admin/AdminDashboard.js";
 
 function App() {
   const location = useLocation();
@@ -58,6 +59,14 @@ function App() {
             element={
               <ProtectedRoute user={user}>
                 <CourseForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute user={user}>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

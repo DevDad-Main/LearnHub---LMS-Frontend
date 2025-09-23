@@ -126,6 +126,12 @@ const MainLayout = () => {
               </Button>
             ) : null}
 
+            {user ? (
+              <Button>
+                <Link to={"/admin/dashboard"}>Instructor Dashboard</Link>
+              </Button>
+            ) : null}
+
             {/* Shopping Cart */}
             <Button variant="ghost" size="icon" asChild>
               <Link to="/cart">

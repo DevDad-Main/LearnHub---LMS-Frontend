@@ -87,9 +87,9 @@ const CourseGrid = ({
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">My Courses</h1>
-          <Button onClick={onCreateCourse}>
-            <Plus className="mr-2 h-4 w-4" /> Create Course
-          </Button>
+          {/* <Button onClick={onCreateCourse}> */}
+          {/*   <Plus className="mr-2 h-4 w-4" /> Create Course */}
+          {/* </Button> */}
         </div>
 
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4">
