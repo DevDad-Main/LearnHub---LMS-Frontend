@@ -30,6 +30,7 @@ function App() {
         {/* Everything else inside MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/course/:id" element={<CourseDetails />} />
           <Route
             path="/dashboard"
             element={
@@ -70,7 +71,9 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/course/:id" element={<CourseDetails />} />
+          <Route path="/admin/courses" element={<AdminDashboard />} />
+          <Route path="/admin/course/create" element={<CourseForm />} />
+          <Route path="/admin/course/:courseId" element={<CourseForm />} />
         </Route>
       </Routes>
     </Suspense>

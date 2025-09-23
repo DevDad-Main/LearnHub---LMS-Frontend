@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -13,6 +14,8 @@ import {
   Save,
   Edit,
   FileText,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,6 +83,12 @@ const courseDetailsSchema = z.object({
   thumbnail: z.any().optional(),
 });
 
+const sectionSchema = z.object({
+  title: z
+    .string()
+    .min(3, { message: "Section title must be at least 3 characters" }),
+});
+
 const lectureSchema = z.object({
   title: z
     .string()
@@ -89,46 +98,85 @@ const lectureSchema = z.object({
   videoFile: z.any().optional(),
 });
 
-const CourseForm = ({
-  isEditing = false,
-  courseData = null,
-  onComplete = () => {},
-}) => {
+const CourseForm = () => {
   const { axios } = useAppContext();
+  const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
+  const isEditing = !!courseId;
 
   const [courseDetailsSaved, setCourseDetailsSaved] = useState(isEditing);
-  const [savedCourseId, setSavedCourseId] = useState(courseData?._id || null);
-  const [thumbnailPreview, setThumbnailPreview] = useState(
-    courseData?.thumbnail || null,
-  );
+  const [savedCourseId, setSavedCourseId] = useState(courseId || null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
   const [isSubmittingCourse, setIsSubmittingCourse] = useState(false);
-  const [courseSubmitError, setCourseSubmitError] = useState(null);
+  const [courseSubmitError, setCourseSubmitError] = useState<string | null>(
+    null,
+  );
   const [isEditingCourseDetails, setIsEditingCourseDetails] =
     useState(!isEditing);
   const [updateThumbnail, setUpdateThumbnail] = useState(false);
-  const [lectures, setLectures] = useState([]);
+  const [courseData, setCourseData] = useState<any>(null);
+
+  const [sections, setSections] = useState<any[]>([]);
+  const [expandedSections, setExpandedSections] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [isAddingSection, setIsAddingSection] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [isSubmittingSection, setIsSubmittingSection] = useState(false);
+  const [sectionSubmitError, setSectionSubmitError] = useState<string | null>(
+    null,
+  );
+
   const [isAddingLecture, setIsAddingLecture] = useState(false);
-  const [editingLectureId, setEditingLectureId] = useState(null);
-  const [currentLecture, setCurrentLecture] = useState(null);
-  const [videoPreview, setVideoPreview] = useState(null);
+  const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
+  const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isSubmittingLecture, setIsSubmittingLecture] = useState(false);
-  const [lectureSubmitError, setLectureSubmitError] = useState(null);
+  const [lectureSubmitError, setLectureSubmitError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (isEditing && courseData) {
-      setCourseDetailsSaved(true);
-      setSavedCourseId(courseData._id);
-      setThumbnailPreview(courseData.thumbnail);
-      if (courseData.lectures) {
-        setLectures(
-          courseData.lectures.map((lecture) => ({
-            ...lecture,
-            saved: true,
-          })),
-        );
-      }
+    if (isEditing && courseId) {
+      const fetchCourse = async () => {
+        try {
+          const response = await axios.get(`/api/v1/course/c/${courseId}`);
+          const data = response.data.course;
+          setCourseData(data);
+          setCourseDetailsSaved(true);
+          setSavedCourseId(courseId);
+          setThumbnailPreview(data.thumbnail);
+          if (data.sections) {
+            const initializedSections = data.sections.map((section: any) => ({
+              id: section._id,
+              title: section.title,
+              lectures: section.lectures.map((lecture: any) => ({
+                id: lecture._id,
+                title: lecture.title,
+                type: lecture.type,
+                content: lecture.content || "",
+                videoUrl: lecture.video || "",
+                saved: true,
+              })),
+              saved: true,
+            }));
+            setSections(initializedSections);
+            const initialExpanded = initializedSections.reduce(
+              (acc: any, section: any) => ({
+                ...acc,
+                [section.id]: true,
+              }),
+              {},
+            );
+            setExpandedSections(initialExpanded);
+          }
+        } catch (error) {
+          console.error("Error fetching course:", error);
+        }
+      };
+      fetchCourse();
     }
-  }, [isEditing, courseData]);
+  }, [isEditing, courseId, axios]);
 
   const courseForm = useForm({
     resolver: zodResolver(courseDetailsSchema),
@@ -139,6 +187,27 @@ const CourseForm = ({
       level: courseData?.level || "",
       price: courseData?.price || 0,
       thumbnail: null,
+    },
+    mode: "onChange",
+  });
+
+  useEffect(() => {
+    if (courseData) {
+      courseForm.reset({
+        title: courseData.title,
+        description: courseData.description,
+        category: courseData.category,
+        level: courseData.level,
+        price: courseData.price,
+        thumbnail: null,
+      });
+    }
+  }, [courseData, courseForm]);
+
+  const sectionForm = useForm({
+    resolver: zodResolver(sectionSchema),
+    defaultValues: {
+      title: "",
     },
     mode: "onChange",
   });
@@ -154,7 +223,7 @@ const CourseForm = ({
     mode: "onChange",
   });
 
-  const handleCourseDetailsSubmit = async (data) => {
+  const handleCourseDetailsSubmit = async (data: any) => {
     setIsSubmittingCourse(true);
     setCourseSubmitError(null);
 
@@ -173,11 +242,10 @@ const CourseForm = ({
         formData.append("thumbnail", data.thumbnail);
       }
 
-      const endpoint =
-        isEditing && savedCourseId
-          ? `/api/v1/course/c/${savedCourseId}`
-          : "/api/v1/course/add-course";
-      const method = isEditing && savedCourseId ? "put" : "post";
+      const endpoint = isEditing
+        ? `/api/v1/course/c/${savedCourseId}`
+        : "/api/v1/course/add-course";
+      const method = isEditing ? "put" : "post";
       const response = await axios[method](endpoint, formData);
 
       console.log("Course details saved successfully:", response.data);
@@ -186,9 +254,9 @@ const CourseForm = ({
       setUpdateThumbnail(false);
 
       if (!savedCourseId) {
-        setSavedCourseId(response.data.course._id);
+        setSavedCourseId(response.data.courseId);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving course details:", error);
       setCourseSubmitError(
         error.response?.data?.message || "Failed to save course details",
@@ -198,9 +266,110 @@ const CourseForm = ({
     }
   };
 
-  const handleLectureSubmit = async (data) => {
+  const handleSectionSubmit = async (data: any) => {
     if (!savedCourseId) {
-      setLectureSubmitError("No course ID available");
+      setSectionSubmitError("No course ID available");
+      return;
+    }
+
+    setIsSubmittingSection(true);
+    setSectionSubmitError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("title", data.title);
+
+      let response;
+      if (editingSectionId) {
+        response = await axios.put(
+          `/api/v1/course/${savedCourseId}/update-section/${editingSectionId}`,
+          formData,
+        );
+        setSections((prev) =>
+          prev.map((section) =>
+            section.id === editingSectionId
+              ? { ...section, title: data.title, saved: true }
+              : section,
+          ),
+        );
+      } else {
+        response = await axios.post(
+          `/api/v1/course/${savedCourseId}/add-section`,
+          formData,
+        );
+        const newSection = {
+          id: response.data.sectionId,
+          title: data.title,
+          lectures: [],
+          saved: true,
+        };
+        setSections((prev) => [...prev, newSection]);
+        setExpandedSections((prev) => ({ ...prev, [newSection.id]: true }));
+      }
+
+      console.log("Section saved successfully:", response.data);
+      setIsAddingSection(false);
+      setEditingSectionId(null);
+      sectionForm.reset();
+    } catch (error: any) {
+      console.error("Error saving section:", error);
+      setSectionSubmitError(
+        error.response?.data?.message || "Failed to save section",
+      );
+    } finally {
+      setIsSubmittingSection(false);
+    }
+  };
+
+  const handleDeleteSection = async (sectionId: string) => {
+    try {
+      await axios.delete(
+        `/api/v1/course/${savedCourseId}/delete-section/${sectionId}`,
+      );
+      setSections((prev) => prev.filter((section) => section.id !== sectionId));
+      setExpandedSections((prev) => {
+        const updated = { ...prev };
+        delete updated[sectionId];
+        return updated;
+      });
+      console.log("Section deleted successfully");
+    } catch (error: any) {
+      console.error("Error deleting section:", error);
+      setSectionSubmitError(
+        error.response?.data?.message || "Failed to delete section",
+      );
+    }
+  };
+
+  const startEditingSection = (section: any) => {
+    setEditingSectionId(section.id);
+    setIsAddingSection(true);
+    sectionForm.reset({ title: section.title });
+  };
+
+  const startAddingSection = () => {
+    setIsAddingSection(true);
+    setEditingSectionId(null);
+    sectionForm.reset({ title: "" });
+  };
+
+  const cancelAddingSection = () => {
+    setIsAddingSection(false);
+    setEditingSectionId(null);
+    setSectionSubmitError(null);
+    sectionForm.reset();
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
+
+  const handleLectureSubmit = async (data: any) => {
+    if (!savedCourseId || !currentSectionId) {
+      setLectureSubmitError("No course or section ID available");
       return;
     }
 
@@ -209,7 +378,6 @@ const CourseForm = ({
 
     try {
       const formData = new FormData();
-      formData.append("courseId", savedCourseId);
       formData.append("title", data.title);
       formData.append("type", data.type);
       formData.append("content", data.content || "");
@@ -217,49 +385,61 @@ const CourseForm = ({
         formData.append("videoFile", data.videoFile);
       }
 
-      console.log("Submitting lecture:", {
-        editingLectureId,
-        formData: [...formData],
-      });
-
       let response;
       if (editingLectureId) {
-        // Update existing lecture
         response = await axios.put(
-          `/api/v1/course/update-lecture/${editingLectureId}`,
+          `/api/v1/course/${savedCourseId}/update-lecture/${editingLectureId}`,
           formData,
         );
-        setLectures((prev) =>
-          prev.map((lecture) =>
-            lecture.id === editingLectureId
+        setSections((prevSections) =>
+          prevSections.map((section) =>
+            section.id === currentSectionId
               ? {
-                  ...data,
-                  id: editingLectureId,
-                  saved: true,
-                  videoUrl: response.data.lecture.video,
+                  ...section,
+                  lectures: section.lectures.map((lecture) =>
+                    lecture.id === editingLectureId
+                      ? {
+                          ...data,
+                          id: editingLectureId,
+                          saved: true,
+                          videoUrl: response.data.lecture.video,
+                        }
+                      : lecture,
+                  ),
                 }
-              : lecture,
+              : section,
           ),
         );
       } else {
-        // Add new lecture
-        response = await axios.post(`/api/v1/course/add-lecture`, formData);
+        response = await axios.post(
+          `/api/v1/course/${savedCourseId}/section/${currentSectionId}/add-lecture`,
+          formData,
+        );
         const newLecture = {
           ...data,
           id: response.data.lectureId,
           saved: true,
-          videoUrl: response.data.lecture?.videoUrl || "",
+          videoUrl: response.data.lecture?.video || "",
         };
-        setLectures((prev) => [...prev, newLecture]);
+        setSections((prevSections) =>
+          prevSections.map((section) =>
+            section.id === currentSectionId
+              ? {
+                  ...section,
+                  lectures: [...section.lectures, newLecture],
+                }
+              : section,
+          ),
+        );
       }
 
       console.log("Lecture saved successfully:", response.data);
       setIsAddingLecture(false);
       setEditingLectureId(null);
-      setCurrentLecture(null);
+      setCurrentSectionId(null);
       setVideoPreview(null);
       lectureForm.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving lecture:", error);
       setLectureSubmitError(
         error.response?.data?.message || "Failed to save lecture",
@@ -269,12 +449,25 @@ const CourseForm = ({
     }
   };
 
-  const handleDeleteLecture = async (lectureId) => {
+  const handleDeleteLecture = async (sectionId: string, lectureId: string) => {
     try {
-      await axios.delete(`/api/v1/course/delete-lecture/${lectureId}`);
-      setLectures((prev) => prev.filter((lecture) => lecture.id !== lectureId));
+      await axios.delete(
+        `/api/v1/course/${savedCourseId}/delete-lecture/${lectureId}`,
+      );
+      setSections((prevSections) =>
+        prevSections.map((section) =>
+          section.id === sectionId
+            ? {
+                ...section,
+                lectures: section.lectures.filter(
+                  (lecture) => lecture.id !== lectureId,
+                ),
+              }
+            : section,
+        ),
+      );
       console.log("Lecture deleted successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting lecture:", error);
       setLectureSubmitError(
         error.response?.data?.message || "Failed to delete lecture",
@@ -282,7 +475,8 @@ const CourseForm = ({
     }
   };
 
-  const startEditingLecture = (lecture) => {
+  const startEditingLecture = (sectionId: string, lecture: any) => {
+    setCurrentSectionId(sectionId);
     setEditingLectureId(lecture.id);
     setIsAddingLecture(true);
     setVideoPreview(lecture.videoUrl || null);
@@ -294,11 +488,11 @@ const CourseForm = ({
     });
   };
 
-  const startAddingLecture = () => {
+  const startAddingLectureToSection = (sectionId: string) => {
+    setCurrentSectionId(sectionId);
     setIsAddingLecture(true);
-    setEditingLectureId(null); // Ensure no lecture ID is set for new lectures
+    setEditingLectureId(null);
     setVideoPreview(null);
-    setCurrentLecture(null);
     lectureForm.reset({
       title: "",
       type: "Video",
@@ -307,12 +501,21 @@ const CourseForm = ({
     });
   };
 
-  const handleThumbnailChange = (e) => {
+  const cancelAddingLecture = () => {
+    setIsAddingLecture(false);
+    setEditingLectureId(null);
+    setCurrentSectionId(null);
+    setVideoPreview(null);
+    setLectureSubmitError(null);
+    lectureForm.reset();
+  };
+
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setThumbnailPreview(reader.result);
+        setThumbnailPreview(reader.result as string);
         setUpdateThumbnail(true);
       };
       reader.readAsDataURL(file);
@@ -326,7 +529,7 @@ const CourseForm = ({
     courseForm.setValue("thumbnail", null);
   };
 
-  const handleVideoChange = (e) => {
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.includes("mp4")) {
@@ -335,7 +538,7 @@ const CourseForm = ({
       }
       const reader = new FileReader();
       reader.onloadend = () => {
-        setVideoPreview(reader.result);
+        setVideoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
       lectureForm.setValue("videoFile", file);
@@ -347,20 +550,19 @@ const CourseForm = ({
     lectureForm.setValue("videoFile", null);
   };
 
-  const cancelAddingLecture = () => {
-    setIsAddingLecture(false);
-    setEditingLectureId(null);
-    setCurrentLecture(null);
-    setVideoPreview(null);
-    setLectureSubmitError(null);
-    lectureForm.reset();
-  };
-
-  const canAddMoreLectures = lectures.length < 20;
-  const hasUnsavedLecture = isAddingLecture;
+  const canAddMoreSections = sections.length < 20;
 
   return (
     <div className="bg-background p-6 rounded-lg shadow-sm w-full max-w-5xl mx-auto space-y-8">
+      <Button
+        variant="outline"
+        onClick={() => navigate("/admin/courses")}
+        className="mb-6"
+      >
+        ← Back to Course Management
+      </Button>
+
+      {/* Course Details Section */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -373,7 +575,7 @@ const CourseForm = ({
                   ? "Edit your course information"
                   : courseDetailsSaved
                     ? "Course details saved successfully"
-                    : "Fill in your course information and save before adding lectures"}
+                    : "Fill in your course information and save before adding sections"}
               </CardDescription>
             </div>
             <div className="flex items-center space-x-2">
@@ -504,10 +706,7 @@ const CourseForm = ({
                             </FormControl>
                             <SelectContent>
                               {difficultyLevels.map((level) => (
-                                <SelectItem
-                                  key={level}
-                                  value={level.toLowerCase()}
-                                >
+                                <SelectItem key={level} value={level}>
                                   {level}
                                 </SelectItem>
                               ))}
@@ -641,147 +840,62 @@ const CourseForm = ({
           </Form>
         </CardContent>
       </Card>
+
+      {/* Sections Section */}
       {courseDetailsSaved && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-xl font-bold">
-                  Course Lectures ({lectures.length}/20)
+                  Course Sections ({sections.length}/20)
                 </CardTitle>
                 <CardDescription>
                   {isEditing
-                    ? "Manage your course lectures. You can add, edit, or remove lectures."
-                    : "Add lectures one at a time. Each lecture must be saved before adding another."}
+                    ? "Manage your course sections. Add sections and lectures one at a time."
+                    : "Add sections one at a time. Each section must be saved before adding lectures."}
                 </CardDescription>
               </div>
-              {canAddMoreLectures && !hasUnsavedLecture && (
-                <div className="flex space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      lectureForm.setValue("type", "Video");
-                      startAddingLecture();
-                    }}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Video
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      lectureForm.setValue("type", "Text");
-                      startAddingLecture();
-                    }}
-                  >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Text
-                  </Button>
-                </div>
+              {canAddMoreSections && !isAddingSection && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={startAddingSection}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add Section
+                </Button>
               )}
             </div>
-            {!canAddMoreLectures && (
-              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-md">
-                Maximum of 20 lectures reached
-              </div>
-            )}
-            {lectureSubmitError && (
+            {sectionSubmitError && (
               <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md">
-                Error: {lectureSubmitError}
+                Error: {sectionSubmitError}
               </div>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
-            {lectures.map((lecture, index) => (
-              <Card key={lecture.id} className="bg-green-50 border-green-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {lecture.type === "Video" ? (
-                        <Video className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <FileText className="h-5 w-5 text-green-500" />
-                      )}
-                      <div>
-                        <h4 className="font-medium">
-                          {index + 1}. {lecture.title}
-                        </h4>
-                        <p className="text-sm text-muted-foreground">
-                          Video Lecture
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEditingLecture(lecture)}
-                        disabled={hasUnsavedLecture}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={hasUnsavedLecture}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Lecture</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{lecture.title}"?
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteLecture(lecture.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {isAddingLecture && (
+            {isAddingSection && (
               <Card className="border-blue-200 bg-blue-50">
                 <CardHeader>
                   <CardTitle className="text-lg">
-                    {editingLectureId
-                      ? "Edit Lecture"
-                      : `Add New Lecture (${lectures.length + 1}/20)`}
+                    {editingSectionId ? "Edit Section" : "Add New Section"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Form {...lectureForm}>
+                  <Form {...sectionForm}>
                     <form
-                      onSubmit={lectureForm.handleSubmit(handleLectureSubmit)}
+                      onSubmit={sectionForm.handleSubmit(handleSectionSubmit)}
                       className="space-y-4"
                     >
                       <FormField
-                        control={lectureForm.control}
+                        control={sectionForm.control}
                         name="title"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Lecture Title</FormLabel>
+                            <FormLabel>Section Title</FormLabel>
                             <FormControl>
                               <Input
-                                placeholder="Enter lecture title"
+                                placeholder="Enter section title"
                                 {...field}
                               />
                             </FormControl>
@@ -789,97 +903,29 @@ const CourseForm = ({
                           </FormItem>
                         )}
                       />
-                      {lectureForm.watch("type") === "Video" && (
-                        <FormItem>
-                          <FormLabel>Video File</FormLabel>
-                          <div className="mt-2">
-                            {videoPreview ? (
-                              <div className="relative w-full h-40 rounded-md overflow-hidden bg-black">
-                                <video
-                                  src={videoPreview}
-                                  className="w-full h-full object-contain"
-                                  controls
-                                />
-                                <Button
-                                  type="button"
-                                  variant="destructive"
-                                  size="icon"
-                                  className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                                  onClick={clearVideo}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md">
-                                <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <Video className="h-10 w-10 text-gray-400" />
-                                    <p className="mt-2 text-sm text-gray-500">
-                                      {editingLectureId
-                                        ? "Click to change video"
-                                        : "Click to upload MP4 video"}
-                                    </p>
-                                  </div>
-                                  <input
-                                    type="file"
-                                    className="hidden"
-                                    accept=".mp4,video/mp4"
-                                    onChange={handleVideoChange}
-                                  />
-                                </label>
-                              </div>
-                            )}
-                          </div>
-                          <FormDescription>
-                            {editingLectureId
-                              ? "Upload a new MP4 video file to replace the current one (optional)"
-                              : "Upload an MP4 video file for this lecture"}
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                      {lectureForm.watch("type") === "Text" && (
-                        <FormField
-                          control={lectureForm.control}
-                          name="content"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Lecture Content</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Enter lecture content"
-                                  className="min-h-24"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )}
                       <div className="flex justify-end space-x-2">
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={cancelAddingLecture}
-                          disabled={isSubmittingLecture}
+                          onClick={cancelAddingSection}
+                          disabled={isSubmittingSection}
                         >
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={isSubmittingLecture}>
-                          {isSubmittingLecture ? (
+                        <Button type="submit" disabled={isSubmittingSection}>
+                          {isSubmittingSection ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              {editingLectureId
+                              {editingSectionId
                                 ? "Updating..."
-                                : "Saving Lecture..."}
+                                : "Saving Section..."}
                             </>
                           ) : (
                             <>
                               <Save className="mr-2 h-4 w-4" />
-                              {editingLectureId
-                                ? "Update Lecture"
-                                : "Save Lecture"}
+                              {editingSectionId
+                                ? "Update Section"
+                                : "Save Section"}
                             </>
                           )}
                         </Button>
@@ -889,28 +935,344 @@ const CourseForm = ({
                 </CardContent>
               </Card>
             )}
-            {lectures.length === 0 && !isAddingLecture && (
+
+            {sections.map((section, index) => (
+              <Card key={section.id}>
+                <CardHeader
+                  className="cursor-pointer flex flex-row items-center justify-between"
+                  onClick={() => toggleSection(section.id)}
+                >
+                  <div>
+                    <CardTitle className="text-lg">
+                      Section {index + 1}: {section.title}
+                    </CardTitle>
+                    <CardDescription>
+                      Lectures: {section.lectures.length}
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditingSection(section);
+                      }}
+                      disabled={isAddingSection || isAddingLecture}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={isAddingSection || isAddingLecture}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Section</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{section.title}"?
+                            This will also delete all lectures in this section.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteSection(section.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    {expandedSections[section.id] ? (
+                      <ChevronUp className="h-5 w-5" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5" />
+                    )}
+                  </div>
+                </CardHeader>
+                {expandedSections[section.id] && (
+                  <CardContent className="space-y-4">
+                    {section.lectures.map((lecture: any, lecIndex: number) => (
+                      <Card
+                        key={lecture.id}
+                        className="bg-green-50 border-green-200"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              {lecture.type === "Video" ? (
+                                <Video className="h-5 w-5 text-green-500" />
+                              ) : (
+                                <FileText className="h-5 w-5 text-green-500" />
+                              )}
+                              <div>
+                                <h4 className="font-medium">
+                                  {lecIndex + 1}. {lecture.title}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {lecture.type === "Video"
+                                    ? "Video Lecture"
+                                    : "Text Lecture"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  startEditingLecture(section.id, lecture)
+                                }
+                                disabled={isAddingLecture}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={isAddingLecture}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Delete Lecture
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to delete "
+                                      {lecture.title}"? This action cannot be
+                                      undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() =>
+                                        handleDeleteLecture(
+                                          section.id,
+                                          lecture.id,
+                                        )
+                                      }
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    {section.lectures.length < 30 && !isAddingLecture && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => startAddingLectureToSection(section.id)}
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Lecture to this Section
+                      </Button>
+                    )}
+                    {section.lectures.length === 0 && (
+                      <p className="text-center text-muted-foreground">
+                        No lectures in this section yet.
+                      </p>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            ))}
+            {sections.length === 0 && !isAddingSection && (
               <div className="text-center p-8 border border-dashed rounded-md">
                 <p className="text-muted-foreground mb-4">
-                  No lectures added yet
+                  No sections added yet
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Click "Add Video" or "Add Text" to create your first lecture
+                  Add a section to start organizing your lectures
                 </p>
               </div>
             )}
           </CardContent>
         </Card>
       )}
-      {courseDetailsSaved && lectures.length > 0 && !hasUnsavedLecture && (
-        <Card>
-          <CardFooter className="flex justify-center">
-            <Button onClick={onComplete} size="lg">
-              {isEditing ? "Save Changes" : "Complete Course Creation"}
-            </Button>
-          </CardFooter>
+
+      {/* Lecture Form */}
+      {isAddingLecture && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              {editingLectureId ? "Edit Lecture" : "Add New Lecture"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...lectureForm}>
+              <form
+                onSubmit={lectureForm.handleSubmit(handleLectureSubmit)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={lectureForm.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lecture Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter lecture title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={lectureForm.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lecture Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select lecture type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Video">Video</SelectItem>
+                          <SelectItem value="Text">Text</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {lectureForm.watch("type") === "Video" && (
+                  <FormItem>
+                    <FormLabel>Video File</FormLabel>
+                    <div className="mt-2">
+                      {videoPreview ? (
+                        <div className="relative w-full h-40 rounded-md overflow-hidden bg-black">
+                          <video
+                            src={videoPreview}
+                            className="w-full h-full object-contain"
+                            controls
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                            onClick={clearVideo}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md">
+                          <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                              <Video className="h-10 w-10 text-gray-400" />
+                              <p className="mt-2 text-sm text-gray-500">
+                                {editingLectureId
+                                  ? "Click to change video"
+                                  : "Click to upload MP4 video"}
+                              </p>
+                            </div>
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept=".mp4,video/mp4"
+                              onChange={handleVideoChange}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                    <FormDescription>
+                      {editingLectureId
+                        ? "Upload a new MP4 video file to replace the current one (optional)"
+                        : "Upload an MP4 video file for this lecture"}
+                    </FormDescription>
+                  </FormItem>
+                )}
+                {lectureForm.watch("type") === "Text" && (
+                  <FormField
+                    control={lectureForm.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Lecture Content</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Enter lecture content"
+                            className="min-h-24"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={cancelAddingLecture}
+                    disabled={isSubmittingLecture}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmittingLecture}>
+                    {isSubmittingLecture ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {editingLectureId ? "Updating..." : "Saving Lecture..."}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        {editingLectureId ? "Update Lecture" : "Save Lecture"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
         </Card>
       )}
+
+      {courseDetailsSaved &&
+        sections.length > 0 &&
+        !isAddingSection &&
+        !isAddingLecture && (
+          <Card>
+            <CardFooter className="flex justify-center">
+              <Button onClick={() => navigate("/admin/courses")} size="lg">
+                {isEditing ? "Save Changes" : "Complete Course Creation"}
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
     </div>
   );
 };

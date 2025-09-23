@@ -1,36 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  PlusCircle,
-  Settings,
-  Bell,
-  User,
   BookOpen,
   BarChart3,
   DollarSign,
+  User,
+  Settings,
+  Bell,
+  PlusCircle,
 } from "lucide-react";
 import CourseGrid from "./CourseGrid";
-import CourseForm from "./CourseForm";
 import { useAppContext } from "../../context/AppContext";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
-  const [isCreatingCourse, setIsCreatingCourse] = useState(false);
-  const [editingCourse, setEditingCourse] = useState<any>(null);
   const [courses, setCourses] = useState([]);
-
   const { axios } = useAppContext();
+  const navigate = useNavigate();
 
   const fetchCourses = async () => {
     try {
       const { data } = await axios.get("/api/v1/course/courses");
-
       if (data.success) {
         setCourses(data.courses);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error fetching courses:", error);
     }
   };
 
@@ -39,21 +35,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleCreateCourse = () => {
-    setIsCreatingCourse(true);
-    setEditingCourse(null);
-    setActiveTab("create");
-  };
-
-  const handleEditCourse = (course: any) => {
-    setEditingCourse(course);
-    setIsCreatingCourse(false);
-    setActiveTab("create");
-  };
-
-  const handleBackToCourses = () => {
-    setActiveTab("courses");
-    setIsCreatingCourse(false);
-    setEditingCourse(null);
+    navigate("/admin/course/create");
   };
 
   return (
@@ -69,24 +51,43 @@ const AdminDashboard = () => {
           <Button
             variant={activeTab === "courses" ? "secondary" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveTab("courses")}
+            onClick={() => {
+              setActiveTab("courses");
+              navigate("/admin/courses");
+            }}
           >
             <BookOpen className="h-5 w-5 mr-2" />
             Course Management
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button
+            variant={activeTab === "analytics" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("analytics")}
+          >
             <BarChart3 className="h-5 w-5 mr-2" />
             Analytics
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button
+            variant={activeTab === "revenue" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("revenue")}
+          >
             <DollarSign className="h-5 w-5 mr-2" />
             Revenue
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button
+            variant={activeTab === "users" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("users")}
+          >
             <User className="h-5 w-5 mr-2" />
             User Management
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button
+            variant={activeTab === "settings" ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => setActiveTab("settings")}
+          >
             <Settings className="h-5 w-5 mr-2" />
             Settings
           </Button>
@@ -109,63 +110,21 @@ const AdminDashboard = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="h-16 border-b flex items-center justify-between px-6">
-          <div>
-            <h1 className="text-xl font-semibold">
-              {activeTab === "courses"
-                ? "Course Management"
-                : isCreatingCourse
-                  ? "Create New Course"
-                  : "Edit Course"}
-            </h1>
-          </div>
+          <h1 className="text-xl font-semibold">Course Management</h1>
           <div className="flex items-center space-x-4">
             <Button variant="outline" size="icon">
               <Bell size={20} />
             </Button>
-            {activeTab === "courses" && (
-              <Button onClick={handleCreateCourse}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Create Course
-              </Button>
-            )}
+            <Button onClick={handleCreateCourse}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Course
+            </Button>
           </div>
         </header>
 
         {/* Content Area */}
         <main className="flex-1 overflow-auto p-6">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="hidden">
-              <TabsTrigger value="courses">Course Management</TabsTrigger>
-              <TabsTrigger value="create">Create/Edit Course</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="courses" className="mt-0">
-              <CourseGrid onEditCourse={handleEditCourse} courses={courses} />
-            </TabsContent>
-
-            <TabsContent value="create" className="mt-0">
-              {activeTab === "create" && (
-                <div>
-                  <Button
-                    variant="outline"
-                    onClick={handleBackToCourses}
-                    className="mb-6"
-                  >
-                    ← Back to Course Management
-                  </Button>
-                  <CourseForm
-                    isEditing={!!editingCourse}
-                    courseData={editingCourse}
-                    onComplete={handleBackToCourses}
-                  />
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
+          <CourseGrid courses={courses} />
         </main>
       </div>
     </div>
