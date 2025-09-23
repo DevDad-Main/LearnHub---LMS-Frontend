@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -34,7 +34,7 @@ interface Section {
 interface Lecture {
   id: string;
   title: string;
-  type: "video" | "text" | "quiz";
+  type: "video" | "text";
   content: string;
 }
 
@@ -46,7 +46,7 @@ interface CourseGridProps {
 }
 
 const CourseGrid = ({
-  courses = mockCourses,
+  courses = [],
   onCreateCourse = () => {},
   onEditCourse = () => {},
   onDeleteCourse = () => {},
@@ -177,11 +177,11 @@ const CourseGrid = ({
               >
                 {filteredCourses.map((course) => (
                   <CourseCard
-                    key={course.id}
+                    key={course._id}
                     course={course}
                     viewMode={viewMode}
                     onEdit={() => onEditCourse(course)}
-                    onDelete={() => onDeleteCourse(course.id)}
+                    onDelete={() => onDeleteCourse(course._id)}
                   />
                 ))}
               </div>

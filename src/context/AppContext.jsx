@@ -77,6 +77,13 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
+  //#region Get Logged In Users Courses
+  const fetchCourses = async () => {
+    // const {data} await axios.get('')
+  };
+
+  //#endregion
+
   useEffect(() => {
     fetchUser();
   }, []);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,11 +12,31 @@ import {
 } from "lucide-react";
 import CourseGrid from "./CourseGrid";
 import CourseForm from "./CourseForm";
+import { useAppContext } from "../../context/AppContext";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
   const [isCreatingCourse, setIsCreatingCourse] = useState(false);
   const [editingCourse, setEditingCourse] = useState<any>(null);
+  const [courses, setCourses] = useState([]);
+
+  const { axios } = useAppContext();
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/course/courses");
+
+      if (data.success) {
+        setCourses(data.courses);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   const handleCreateCourse = () => {
     setIsCreatingCourse(true);
@@ -124,7 +144,7 @@ const AdminDashboard = () => {
             </TabsList>
 
             <TabsContent value="courses" className="mt-0">
-              <CourseGrid onEditCourse={handleEditCourse} />
+              <CourseGrid onEditCourse={handleEditCourse} courses={courses} />
             </TabsContent>
 
             <TabsContent value="create" className="mt-0">
