@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -132,7 +132,7 @@ const featuredCourses = [
 // Mock recently viewed courses
 const recentlyViewed = [
   {
-    id: 9,
+    id: "68d30bb4b1cb645920d609c6",
     title: "Vue.js Complete Guide",
     instructor: "Mark Thompson",
     rating: 4.6,

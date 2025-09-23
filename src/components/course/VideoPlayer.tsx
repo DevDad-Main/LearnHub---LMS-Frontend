@@ -23,24 +23,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
-interface VideoPlayerProps {
-  videoUrl?: string;
-  title?: string;
-  onNext?: () => void;
-  onPrevious?: () => void;
-  hasNext?: boolean;
-  hasPrevious?: boolean;
+interface Lecture {
+  _id: string;
+  title: string;
+  type: "Video" | "Text";
+  content: string;
+  video: string;
+  duration: number;
 }
 
-const VideoPlayer = ({
-  videoUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  title = "Introduction to React",
-  onNext = () => {},
-  onPrevious = () => {},
-  hasNext = true,
-  hasPrevious = true,
-}: VideoPlayerProps) => {
+interface VideoPlayerProps {
+  lecture: Lecture | undefined;
+}
+
+const VideoPlayer = ({ lecture }: VideoPlayerProps) => {
+  if (!lecture) {
+    return (
+      <Card className="w-full h-full flex items-center justify-center">
+        <CardContent>
+          <p className="text-muted-foreground">No lecture selected</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -67,7 +75,9 @@ const VideoPlayer = ({
       if (isPlaying) {
         videoRef.current.pause();
       } else {
-        videoRef.current.play();
+        videoRef.current.play().catch((err) => {
+          console.error("Error playing video:", err);
+        });
       }
       setIsPlaying(!isPlaying);
     }
@@ -79,8 +89,8 @@ const VideoPlayer = ({
     setVolume(newVolume);
     if (videoRef.current) {
       videoRef.current.volume = newVolume;
+      setIsMuted(newVolume === 0);
     }
-    setIsMuted(newVolume === 0);
   };
 
   // Handle mute toggle
@@ -112,8 +122,10 @@ const VideoPlayer = ({
         console.error(`Error attempting to enable fullscreen: ${err.message}`);
       });
       setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
+    } else if (document.fullscreenElement) {
+      document.exitFullscreen().catch((err) => {
+        console.error(`Error exiting fullscreen: ${err.message}`);
+      });
       setIsFullscreen(false);
     }
   };
@@ -142,7 +154,7 @@ const VideoPlayer = ({
     }, 3000);
   };
 
-  // Update time as video plays
+  // Sync video state with component state
   useEffect(() => {
     const video = videoRef.current;
 
@@ -154,21 +166,37 @@ const VideoPlayer = ({
 
     const handleLoadedMetadata = () => {
       if (video) {
-        setDuration(video.duration);
+        setDuration(video.duration || 0);
+        setVolume(video.volume);
+        setIsMuted(video.volume === 0);
+        if (video.autoplay) {
+          setIsPlaying(true);
+        }
       }
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
-      if (hasNext) {
-        onNext();
-      }
+      // Note: onNext is commented out in original code
+      // if (hasNext && onNext) {
+      //   onNext();
+      // }
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
     };
 
     if (video) {
       video.addEventListener("timeupdate", handleTimeUpdate);
       video.addEventListener("loadedmetadata", handleLoadedMetadata);
       video.addEventListener("ended", handleEnded);
+      video.addEventListener("play", handlePlay);
+      video.addEventListener("pause", handlePause);
     }
 
     return () => {
@@ -176,28 +204,33 @@ const VideoPlayer = ({
         video.removeEventListener("timeupdate", handleTimeUpdate);
         video.removeEventListener("loadedmetadata", handleLoadedMetadata);
         video.removeEventListener("ended", handleEnded);
+        video.removeEventListener("play", handlePlay);
+        video.removeEventListener("pause", handlePause);
       }
-
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
     };
-  }, [hasNext, onNext]);
+  }, []);
 
+  // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent space from scrolling page
       if (e.code === "Space") {
         e.preventDefault();
         togglePlay();
       }
-
-      // Optional: left/right arrows for seeking
       if (e.code === "ArrowRight" && videoRef.current) {
-        videoRef.current.currentTime += 5; // skip forward 5s
+        videoRef.current.currentTime += 5;
       }
       if (e.code === "ArrowLeft" && videoRef.current) {
-        videoRef.current.currentTime -= 5; // skip back 5s
+        videoRef.current.currentTime -= 5;
+      }
+      if (e.code === "KeyM") {
+        toggleMute();
+      }
+      if (e.code === "KeyF") {
+        toggleFullscreen();
       }
     };
 
@@ -208,6 +241,19 @@ const VideoPlayer = ({
     };
   }, [isPlaying]);
 
+  // Handle fullscreen change
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   return (
     <div
       ref={playerRef}
@@ -215,13 +261,13 @@ const VideoPlayer = ({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      {/*Video Player Element */}
+      {/* Video Player Element */}
       <video
         ref={videoRef}
-        src={videoUrl}
-        className="w-full h-full object-contain cursor-pointer"
-        onClick={togglePlay}
-        playsInline
+        src={lecture.video}
+        className="w-full h-full object-contain"
+        autoPlay
+        playsInline // Prevents iOS from forcing fullscreen
       />
 
       {/* Video Title Overlay */}
@@ -229,7 +275,7 @@ const VideoPlayer = ({
         className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 text-white transition-opacity duration-300"
         style={{ opacity: showControls ? 1 : 0 }}
       >
-        <h3 className="text-lg font-medium">{title}</h3>
+        <h3 className="text-lg font-medium">{lecture.title}</h3>
       </div>
 
       {/* Play/Pause Overlay */}
@@ -286,18 +332,15 @@ const VideoPlayer = ({
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/20"
-              onClick={onPrevious}
-              disabled={!hasPrevious}
+              disabled // Uncomment and pass onPrevious/hasPrevious if needed
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-
             <Button
               variant="ghost"
               size="icon"
               className="text-white hover:bg-white/20"
-              onClick={onNext}
-              disabled={!hasNext}
+              disabled // Uncomment and pass onNext/hasNext if needed
             >
               <ChevronRight className="h-5 w-5" />
             </Button>
@@ -316,7 +359,6 @@ const VideoPlayer = ({
                   <Volume2 className="h-5 w-5" />
                 )}
               </Button>
-
               <div className="hidden sm:block w-24">
                 <Slider
                   value={[isMuted ? 0 : volume]}
@@ -379,7 +421,10 @@ const VideoPlayer = ({
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Quality</span>
-                    <Select defaultValue="720p">
+                    <Select
+                      defaultValue="720p"
+                      onValueChange={(value) => console.log("Quality:", value)}
+                    >
                       <SelectTrigger className="w-24">
                         <SelectValue placeholder="Quality" />
                       </SelectTrigger>

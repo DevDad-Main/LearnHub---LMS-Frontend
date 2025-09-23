@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -32,6 +32,7 @@ interface Section {
 }
 
 interface CourseSidebarProps {
+  course;
   courseName?: string;
   sections?: Section[];
   currentLectureId?: string;
@@ -42,9 +43,10 @@ interface CourseSidebarProps {
 }
 
 const CourseSidebar = ({
-  courseName = "Complete React Developer in 2024",
-  sections = defaultSections,
-  currentLectureId = "lecture-1-1",
+  course,
+  // courseName = "Complete React Developer in 2024",
+  // sections = defaultSections,
+  currentLectureId = course.sections[0].lectures[0]._id,
   onLectureSelect = () => {},
   onLectureComplete = () => {},
   isOpen = true,
@@ -55,7 +57,7 @@ const CourseSidebar = ({
     () => {
       // Initialize with default completion states
       const initialStates: Record<string, boolean> = {};
-      sections.forEach((section) => {
+      course.sections.forEach((section) => {
         section.lectures.forEach((lecture) => {
           initialStates[lecture.id] = lecture.isCompleted;
         });
@@ -67,7 +69,7 @@ const CourseSidebar = ({
   // Find the section containing the current lecture and expand it by default
   React.useEffect(() => {
     if (currentLectureId) {
-      const sectionId = sections.find((section) =>
+      const sectionId = course.sections.find((section) =>
         section.lectures.some((lecture) => lecture.id === currentLectureId),
       )?.id;
 
@@ -75,8 +77,9 @@ const CourseSidebar = ({
         setExpandedSections((prev) => [...prev, sectionId]);
       }
     }
-  }, [currentLectureId, sections, expandedSections]);
+  }, [currentLectureId, course.sections, expandedSections]);
 
+  //change this to a backend route and toggle status to completed or not completed via a toggle
   const handleLectureCompletion = (lectureId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent lecture selection when clicking completion button
     const newCompletionState = !lectureStates[lectureId];
@@ -88,7 +91,7 @@ const CourseSidebar = ({
   };
 
   // Calculate progress using current lecture states
-  const totalLectures = sections.reduce(
+  const totalLectures = course.sections.reduce(
     (acc, section) => acc + section.lectures.length,
     0,
   );
@@ -97,6 +100,10 @@ const CourseSidebar = ({
     totalLectures > 0
       ? Math.round((completedLectures / totalLectures) * 100)
       : 0;
+
+  useEffect(() => {
+    console.log(currentLectureId);
+  }, []);
 
   return (
     <div
@@ -108,7 +115,7 @@ const CourseSidebar = ({
       {isOpen && (
         <>
           <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-semibold">{courseName}</h2>
+            <h2 className="text-xl font-semibold">{course.title}</h2>
             <Button
               variant="ghost"
               size="icon"
@@ -142,10 +149,10 @@ const CourseSidebar = ({
                 onValueChange={setExpandedSections}
                 className="w-full"
               >
-                {sections.map((section, index) => (
+                {course.sections.map((section, index) => (
                   <AccordionItem
-                    key={section.id}
-                    value={section.id}
+                    key={section._id}
+                    value={section._id}
                     className="border-b"
                   >
                     <AccordionTrigger className="py-4 px-3 hover:bg-muted/50 rounded-md">
@@ -163,7 +170,7 @@ const CourseSidebar = ({
                             lectureStates[lecture.id] || false;
                           return (
                             <div
-                              key={lecture.id}
+                              key={lecture._id}
                               className={cn(
                                 "flex items-center py-3 px-4 text-sm rounded-md gap-3 group cursor-pointer",
                                 lecture.id === currentLectureId
@@ -172,7 +179,7 @@ const CourseSidebar = ({
                               )}
                             >
                               <div
-                                onClick={() => onLectureSelect(lecture.id)}
+                                onClick={() => onLectureSelect(lecture._id)}
                                 className="flex items-center gap-3 flex-1"
                               >
                                 <Play className="h-4 w-4 flex-shrink-0" />
@@ -193,7 +200,7 @@ const CourseSidebar = ({
                                   isCompleted && "opacity-100",
                                 )}
                                 onClick={(e) =>
-                                  handleLectureCompletion(lecture.id, e)
+                                  handleLectureCompletion(lecture._id, e)
                                 }
                               >
                                 {isCompleted ? (
