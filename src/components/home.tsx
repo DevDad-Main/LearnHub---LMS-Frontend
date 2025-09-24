@@ -251,8 +251,28 @@ const recommendedCourses = [
 ];
 
 const Home = () => {
-  const { user, navigate, fetchEnrolledCourses, studentCourses } =
-    useAppContext();
+  const {
+    user,
+    navigate,
+    coursesProgress,
+    fetchEnrolledCourses,
+    studentCourses,
+    fetchStudentCourses,
+  } = useAppContext();
+
+  const courseProgress = (course) =>
+    coursesProgress.find(
+      (courseP) => courseP.course.toString() === course._id.toString(),
+    )?.completionPercentage;
+
+  // const courseProgress = (course) => {
+  //   if (!course?.lectureProgress || !course?.lectures) return 0;
+  //   const completed = course.lectureProgress.filter(
+  //     (lp) => lp.isCompleted,
+  //   ).length;
+  //   const total = course.lectures.length;
+  //   return total > 0 ? Math.round((completed / total) * 100) : 0;
+  // };
 
   useEffect(() => {
     fetchEnrolledCourses();
@@ -348,7 +368,8 @@ const Home = () => {
                         className="absolute top-2 right-2"
                         variant="secondary"
                       >
-                        {course.progress}% complete
+                        {/* {course.progress}% complete */}
+                        {courseProgress(course.course)}% complete
                       </Badge>
                     </div>
                     <CardContent className="p-4">
@@ -369,7 +390,9 @@ const Home = () => {
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
                             className="bg-primary h-2 rounded-full transition-all"
-                            style={{ width: `${course.progress}%` }}
+                            style={{
+                              width: `${courseProgress(course.course)}%`,
+                            }}
                           ></div>
                         </div>
                       </div>

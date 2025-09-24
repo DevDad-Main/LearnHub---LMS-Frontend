@@ -120,11 +120,11 @@ const MainLayout = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
-            {user ? (
-              <Button>
-                <Link to={"/course/add-course"}>Add Course</Link>
-              </Button>
-            ) : null}
+            {/* {user ? ( */}
+            {/*   <Button> */}
+            {/*     <Link to={"/course/add-course"}>Add Course</Link> */}
+            {/*   </Button> */}
+            {/* ) : null} */}
 
             {user ? (
               <Button>

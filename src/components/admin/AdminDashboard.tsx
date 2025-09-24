@@ -30,11 +30,6 @@ const AdminDashboard = () => {
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <div className="w-64 border-r bg-card p-4 flex flex-col">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-primary">EduPlatform</h2>
-          <p className="text-sm text-muted-foreground">Admin Dashboard</p>
-        </div>
-
         <nav className="space-y-2 flex-1">
           <Button
             variant={activeTab === "courses" ? "secondary" : "ghost"}

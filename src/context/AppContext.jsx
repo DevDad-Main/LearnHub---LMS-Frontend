@@ -14,6 +14,7 @@ export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [courses, setCourses] = useState([]);
   const [studentCourses, setStudentCourses] = useState([]);
+  const [coursesProgress, setCoursesProgress] = useState([]);
 
   //#region Register Account With Google
   const responseMessage = async (response) => {
@@ -98,6 +99,9 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get("/api/v1/users/enrolled-courses");
       if (data.success) {
         setStudentCourses(data.enrolledCourses);
+        setCoursesProgress(data.coursesProgress);
+        // console.log("Student Courses: ", data.enrolledCourses);
+        console.log("Courses Progress: ", data.coursesProgress);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -122,6 +126,7 @@ export const AppContextProvider = ({ children }) => {
     fetchCourses,
     fetchEnrolledCourses,
     studentCourses,
+    coursesProgress,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -190,11 +190,14 @@ function CourseVideoPlayerPage() {
       `Lecture ${lectureId} marked as ${isCompleted ? "completed" : "incomplete"}`,
     );
     try {
-      await axios.post(
+      const { data } = await axios.post(
         `/api/v1/course/${id}/lecture/${lectureId}/toggle-complete`,
         { isCompleted },
       );
 
+      if (data.success) {
+        console.log(data);
+      }
       const newCompletionMap = {
         ...lectureCompletion,
         [lectureId]: isCompleted,
