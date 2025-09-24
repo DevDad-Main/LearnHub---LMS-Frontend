@@ -278,15 +278,27 @@ const Home = () => {
                     Explore courses
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                  >
-                    Join for free
-                  </Button>
-                </Link>
+                {!user ? (
+                  <Link to="/register">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                    >
+                      Join for free
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/dashboard">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto"
+                    >
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -310,20 +322,20 @@ const Home = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {studentCourses.map((course) => (
                   <Card
-                    key={course.id}
+                    key={course.course?._id}
                     className="overflow-hidden hover:shadow-lg transition-shadow"
                   >
                     <div className="relative">
                       <img
-                        src={course.thumbnail}
-                        alt={course.title}
+                        src={course.course?.thumbnail}
+                        alt={course.course?.title}
                         className="w-full h-48 object-cover"
                       />
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <Button
                           onClick={() => {
                             window.scrollTo(0, 0);
-                            navigate(`/course/learn/${course.id}`);
+                            navigate(`/course/learn/${course.course?._id}`);
                           }}
                           size="lg"
                           className="rounded-full"
@@ -341,16 +353,16 @@ const Home = () => {
                     </div>
                     <CardContent className="p-4">
                       <h3 className="font-semibold line-clamp-2 mb-2">
-                        {course.title}
+                        {course.course?.title}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-2">
-                        By {course.instructor}
+                        By {course.course?.instructor?.name}
                       </p>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Last viewed {course.lastViewed}</span>
+                        <span>Last viewed {course.course?.lastViewed}</span>
                         <div className="flex items-center">
                           <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-                          {course.rating}
+                          {course.course?.rating}
                         </div>
                       </div>
                       <div className="mt-3">
