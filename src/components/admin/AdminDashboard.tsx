@@ -15,20 +15,8 @@ import { useAppContext } from "../../context/AppContext";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
-  const [courses, setCourses] = useState([]);
-  const { axios } = useAppContext();
+  const { axios, fetchCourses, courses } = useAppContext();
   const navigate = useNavigate();
-
-  const fetchCourses = async () => {
-    try {
-      const { data } = await axios.get("/api/v1/course/courses");
-      if (data.success) {
-        setCourses(data.courses);
-      }
-    } catch (error) {
-      console.error("Error fetching courses:", error);
-    }
-  };
 
   useEffect(() => {
     fetchCourses();

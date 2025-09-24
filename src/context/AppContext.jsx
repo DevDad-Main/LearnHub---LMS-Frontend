@@ -12,6 +12,7 @@ export const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [courses, setCourses] = useState([]);
 
   //#region Register Account With Google
   const responseMessage = async (response) => {
@@ -79,13 +80,21 @@ export const AppContextProvider = ({ children }) => {
 
   //#region Get Logged In Users Courses
   const fetchCourses = async () => {
-    // const {data} await axios.get('')
+    try {
+      const { data } = await axios.get("/api/v1/course/courses");
+      if (data.success) {
+        setCourses(data.courses);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    }
   };
 
   //#endregion
 
   useEffect(() => {
     fetchUser();
+    fetchCourses();
   }, []);
 
   const value = {
@@ -96,6 +105,8 @@ export const AppContextProvider = ({ children }) => {
     fetchUser,
     responseMessage,
     handleLogout,
+    courses,
+    fetchCourses,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

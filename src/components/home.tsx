@@ -132,7 +132,7 @@ const featuredCourses = [
 // Mock recently viewed courses
 const recentlyViewed = [
   {
-    id: "68d30bb4b1cb645920d609c6",
+    id: "68d3ce2d7c3efd1997a1d844",
     title: "Vue.js Complete Guide",
     instructor: "Mark Thompson",
     rating: 4.6,

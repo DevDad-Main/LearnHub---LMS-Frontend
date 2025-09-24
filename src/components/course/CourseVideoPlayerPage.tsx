@@ -54,6 +54,7 @@ function CourseVideoPlayerPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
+  const [courseProgress, setCourseProgress] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lectureCompletion, setLectureCompletion] = useState<{
@@ -100,22 +101,49 @@ function CourseVideoPlayerPage() {
     }
 
     const fetchCourse = async () => {
+      // try {
+      //   setLoading(true);
+      //   const courseResponse = await axios.get(`/api/v1/course/c/${id}`);
+      //   console.log(courseResponse);
+      //   const courseData = courseResponse.data.course;
+      //   const courseProgressdata = courseResponse.data.course.lectureProgress;
+      //   if (!courseData) {
+      //     throw new Error("No course data found");
+      //   }
+      //   setCourse(courseData);
+      //   setCourseProgress(courseProgressdata);
+      //
+      //   // Initialize lectureCompletion from course data
+      //   const completionMap = courseProgressdata.reduce((acc, section) => {
+      //     section.lectures.forEach((lecture) => {
+      //       acc[lecture._id] = lecture.isCompleted || false;
+      //     });
+      //     return acc;
+      //   }, {});
+      //   setLectureCompletion(completionMap);
       try {
         setLoading(true);
         const courseResponse = await axios.get(`/api/v1/course/c/${id}`);
         const courseData = courseResponse.data.course;
+        const progressData = courseData.lectureProgress;
+
         if (!courseData) {
           throw new Error("No course data found");
         }
+
         setCourse(courseData);
 
-        // Initialize lectureCompletion from course data
-        const completionMap = courseData.sections.reduce((acc, section) => {
-          section.lectures.forEach((lecture) => {
-            acc[lecture._id] = lecture.isCompleted || false;
-          });
+        // Flatten lectures across all sections
+        const allLectures = courseData.sections.flatMap(
+          (section) => section.lectures,
+        );
+
+        // Map lecture progress to lectures (by index for now)
+        const completionMap = allLectures.reduce((acc, lecture, index) => {
+          acc[lecture._id] = progressData[index]?.isCompleted || false;
           return acc;
         }, {});
+
         setLectureCompletion(completionMap);
 
         // Set current lecture to next uncompleted or first lecture
