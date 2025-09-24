@@ -259,20 +259,29 @@ const Home = () => {
     studentCourses,
     fetchStudentCourses,
   } = useAppContext();
-
-  const courseProgress = (course) =>
-    coursesProgress.find(
-      (courseP) => courseP.course.toString() === course._id.toString(),
-    )?.completionPercentage;
-
-  // const courseProgress = (course) => {
-  //   if (!course?.lectureProgress || !course?.lectures) return 0;
-  //   const completed = course.lectureProgress.filter(
-  //     (lp) => lp.isCompleted,
-  //   ).length;
-  //   const total = course.lectures.length;
-  //   return total > 0 ? Math.round((completed / total) * 100) : 0;
+  //
+  // const getCourseProgress = (courseProgress) => {
+  //   if (!courseProgress || !courseProgress.course?.sections) return 0;
+  //
+  //   // Flatten all lectures
+  //   const allLectures = courseProgress.course.sections.flatMap(
+  //     (section) => section.lectures || [],
+  //   );
+  //
+  //   if (allLectures.length === 0) return 0;
+  //
+  //   const completedCount = courseProgress.completedLectures?.length || 0;
+  //
+  //   return Math.round((completedCount / allLectures.length) * 100);
   // };
+
+  const getCourseProgress = (courseProgress) => {
+    const allLectures = courseProgress.course.sections.flatMap(
+      (s) => s.lectures || [],
+    );
+    const completedCount = courseProgress.completedLectures?.length || 0;
+    return Math.round((completedCount / allLectures.length) * 100);
+  };
 
   useEffect(() => {
     fetchEnrolledCourses();
@@ -369,7 +378,12 @@ const Home = () => {
                         variant="secondary"
                       >
                         {/* {course.progress}% complete */}
-                        {courseProgress(course.course)}% complete
+                        {coursesProgress?.map((course) => (
+                          <div key={course._id}>
+                            Progress: {getCourseProgress(course)}%
+                          </div>
+                        ))}
+                        {/* {getCourseProgress(course)}% complete */}
                       </Badge>
                     </div>
                     <CardContent className="p-4">
@@ -388,12 +402,15 @@ const Home = () => {
                       </div>
                       <div className="mt-3">
                         <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-primary h-2 rounded-full transition-all"
-                            style={{
-                              width: `${courseProgress(course.course)}%`,
-                            }}
-                          ></div>
+                          {coursesProgress?.map((course) => (
+                            <div
+                              key={course._id}
+                              className="bg-primary h-2 rounded-full transition-all"
+                              style={{
+                                width: `${getCourseProgress(course)}%`,
+                              }}
+                            ></div>
+                          ))}
                         </div>
                       </div>
                     </CardContent>

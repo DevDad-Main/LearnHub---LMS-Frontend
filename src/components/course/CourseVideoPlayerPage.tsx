@@ -63,19 +63,19 @@ function CourseVideoPlayerPage() {
   const [showCongratulations, setShowCongratulations] = useState(false);
 
   // Helper function to find next uncompleted lecture
-  const findNextUncompletedLecture = (
-    courseData: Course,
-    completionMap: { [key: string]: boolean },
-  ) => {
-    for (const section of courseData.sections) {
-      for (const lecture of section.lectures) {
-        if (!completionMap[lecture._id]) {
-          return lecture._id;
-        }
-      }
-    }
-    return null; // All lectures completed
-  };
+  // const findNextUncompletedLecture = (
+  //   courseData: Course,
+  //   completionMap: { [key: string]: boolean },
+  // ) => {
+  //   for (const section of courseData.sections) {
+  //     for (const lecture of section.lectures) {
+  //       if (!completionMap[lecture._id]) {
+  //         return lecture._id;
+  //       }
+  //     }
+  //   }
+  //   return null; // All lectures completed
+  // };
 
   // Check if course is completed
   const isCourseCompleted = (
@@ -88,88 +88,66 @@ function CourseVideoPlayerPage() {
     return allLectures.every((lecture) => completionMap[lecture._id]);
   };
 
-  useEffect(() => {
-    if (!id) {
-      setError("No course ID provided");
-      setLoading(false);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No course ID provided",
-      });
-      return;
+  const findNextUncompletedLecture = (
+    courseData: Course,
+    completionMap: Record<string, boolean>,
+  ) => {
+    for (const section of courseData.sections) {
+      for (const lecture of section.lectures) {
+        if (!completionMap[lecture._id]) {
+          return lecture._id;
+        }
+      }
     }
+    return null; // All lectures completed
+  };
+
+  useEffect(() => {
+    if (!id) return;
 
     const fetchCourse = async () => {
-      // try {
-      //   setLoading(true);
-      //   const courseResponse = await axios.get(`/api/v1/course/c/${id}`);
-      //   console.log(courseResponse);
-      //   const courseData = courseResponse.data.course;
-      //   const courseProgressdata = courseResponse.data.course.lectureProgress;
-      //   if (!courseData) {
-      //     throw new Error("No course data found");
-      //   }
-      //   setCourse(courseData);
-      //   setCourseProgress(courseProgressdata);
-      //
-      //   // Initialize lectureCompletion from course data
-      //   const completionMap = courseProgressdata.reduce((acc, section) => {
-      //     section.lectures.forEach((lecture) => {
-      //       acc[lecture._id] = lecture.isCompleted || false;
-      //     });
-      //     return acc;
-      //   }, {});
-      //   setLectureCompletion(completionMap);
       try {
         setLoading(true);
-        const courseResponse = await axios.get(`/api/v1/course/c/${id}`);
-        const courseData = courseResponse.data.course;
-        const progressData = courseData.lectureProgress;
+        const { data } = await axios.get(`/api/v1/course/c/${id}`);
+        const courseData = data.course;
+        const completedLectures: string[] = data.completedLectures || []; // <- ensure backend sends this
 
-        if (!courseData) {
-          throw new Error("No course data found");
-        }
-
+        if (!courseData) throw new Error("No course data found");
         setCourse(courseData);
 
-        // Flatten lectures across all sections
-        const allLectures = courseData.sections.flatMap(
-          (section) => section.lectures,
-        );
-
-        // Map lecture progress to lectures (by index for now)
-        const completionMap = allLectures.reduce((acc, lecture, index) => {
-          acc[lecture._id] = progressData[index]?.isCompleted || false;
-          return acc;
-        }, {});
-
+        // Map lecture completion
+        const completionMap: Record<string, boolean> = {};
+        courseData.sections.forEach((section) => {
+          section.lectures.forEach((lecture) => {
+            completionMap[lecture._id] = completedLectures.includes(
+              lecture._id,
+            );
+          });
+        });
         setLectureCompletion(completionMap);
 
-        // Set current lecture to next uncompleted or first lecture
-        const nextUncompletedLecture = findNextUncompletedLecture(
+        // Pick next uncompleted lecture
+        const nextLecture = findNextUncompletedLecture(
           courseData,
           completionMap,
         );
-        if (nextUncompletedLecture) {
-          setCurrentLectureId(nextUncompletedLecture);
-        } else if (courseData.sections?.[0]?.lectures?.[0]?._id) {
-          // If all completed, show first lecture and congratulations
+        if (nextLecture) {
+          setCurrentLectureId(nextLecture);
+        } else {
+          // All completed, pick first lecture and show congratulations
           setCurrentLectureId(courseData.sections[0].lectures[0]._id);
           setShowCongratulations(true);
         }
 
         setLoading(false);
       } catch (err: any) {
-        console.error("Error fetching course:", err);
-        const errorMessage =
-          err.response?.data?.message || "Failed to load course data";
-        setError(errorMessage);
+        console.error(err);
+        setError(err.response?.data?.message || "Failed to load course");
         setLoading(false);
         toast({
           variant: "destructive",
           title: "Error",
-          description: errorMessage,
+          description: err.response?.data?.message || "Failed to load course",
         });
       }
     };
@@ -195,25 +173,28 @@ function CourseVideoPlayerPage() {
         { isCompleted },
       );
 
-      if (data.success) {
-        console.log(data);
-      }
+      if (!data.success)
+        throw new Error(data.message || "Failed to toggle lecture");
+
+      // Update local completion map
       const newCompletionMap = {
         ...lectureCompletion,
         [lectureId]: isCompleted,
       };
       setLectureCompletion(newCompletionMap);
 
-      // Check if course is now completed
-      if (course && isCourseCompleted(course, newCompletionMap)) {
-        setShowCongratulations(true);
-        // Add some celebration effects
-        setTimeout(() => {
-          toast({
-            title: "🎉 Congratulations!",
-            description: "You've completed the entire course!",
-          });
-        }, 500);
+      // Automatically go to next uncompleted lecture
+      if (course) {
+        const nextLecture = findNextUncompletedLecture(
+          course,
+          newCompletionMap,
+        );
+        if (nextLecture) {
+          setCurrentLectureId(nextLecture);
+        } else {
+          // All completed
+          setShowCongratulations(true);
+        }
       }
 
       toast({
