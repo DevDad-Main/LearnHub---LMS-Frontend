@@ -316,7 +316,10 @@ const Home = () => {
                       />
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                         <Button
-                          onClick={() => navigate(`/course/learn/${course.id}`)}
+                          onClick={() => {
+                            window.scrollTo(0, 0);
+                            navigate(`/course/learn/${course.id}`);
+                          }}
                           size="lg"
                           className="rounded-full"
                         >

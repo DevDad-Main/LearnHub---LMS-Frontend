@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRoutes, Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import Home from "./components/home";
@@ -16,9 +16,41 @@ import AdminDashboard from "./components/admin/AdminDashboard.js";
 
 function App() {
   const location = useLocation();
-  const { user } = useAppContext();
+  const { axios } = useAppContext();
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get("/api/v1/users/user-authenticated");
+        if (data.success) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        // toast.error(error.message);
+        setUser(null);
+      } finally {
+        setIsLoading(false); // Set loading to false after auth check
+      }
+    };
+    fetchUser();
+  }, []);
+
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Suspense fallback={<p>Loading...</p>}>
@@ -42,7 +74,7 @@ function App() {
           <Route
             path="/cart"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute user={user}>
                 <Cart />
               </ProtectedRoute>
             }
@@ -76,31 +108,9 @@ function App() {
           <Route path="/admin/course/:courseId" element={<CourseForm />} />
         </Route>
       </Routes>
+      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </Suspense>
   );
-  // return (
-  //   <Suspense fallback={<p>Loading...</p>}>
-  //     {!user ? (
-  //       <>
-  //         <Routes>
-  //           <Route path="/login" element={<Login />} />
-  //           <Route path="/register" element={<Register />} />
-  //         </Routes>
-  //         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-  //       </>
-  //     ) : (
-  //       <MainLayout>
-  //         <Routes>
-  //           <Route path="/" element={<Home />} />
-  //           <Route path="/dashboard" element={<Dashboard />} />
-  //           <Route path="/course/:id" element={<CourseDetails />} />
-  //           <Route path="/cart" element={<Cart />} />
-  //         </Routes>
-  //         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-  //       </MainLayout>
-  //     )}
-  //   </Suspense>
-  // );
 }
 
 export default App;

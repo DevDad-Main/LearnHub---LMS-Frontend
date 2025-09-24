@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -18,70 +18,84 @@ import {
 } from "../ui/accordion";
 
 interface Lecture {
-  id: string;
+  _id: string;
   title: string;
-  duration: string;
+  type: "Video";
+  content: string;
+  video: string;
+  duration: number;
   isCompleted: boolean;
-  isActive?: boolean;
 }
 
 interface Section {
-  id: string;
+  _id: string;
   title: string;
   lectures: Lecture[];
 }
 
+interface Course {
+  _id: string;
+  title: string;
+  sections: Section[];
+}
+
 interface CourseSidebarProps {
-  course;
-  courseName?: string;
-  sections?: Section[];
-  currentLectureId?: string;
-  onLectureSelect?: (lectureId: string) => void;
-  onLectureComplete?: (lectureId: string, isCompleted: boolean) => void;
-  isOpen?: boolean;
-  onToggle?: () => void;
+  course: Course;
+  currentLectureId?: string | null;
+  onLectureSelect: (lectureId: string) => void;
+  onLectureComplete: (lectureId: string, isCompleted: boolean) => void;
+  isOpen: boolean;
+  onToggle: () => void;
+  lectureCompletion: { [key: string]: boolean };
 }
 
 const CourseSidebar = ({
   course,
-  // courseName = "Complete React Developer in 2024",
-  // sections = defaultSections,
-  currentLectureId = course.sections[0].lectures[0]._id,
-  onLectureSelect = () => {},
-  onLectureComplete = () => {},
-  isOpen = true,
-  onToggle = () => {},
+  currentLectureId,
+  onLectureSelect,
+  onLectureComplete,
+  isOpen,
+  onToggle,
+  lectureCompletion,
 }: CourseSidebarProps) => {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [lectureStates, setLectureStates] = useState<Record<string, boolean>>(
-    () => {
-      // Initialize with default completion states
-      const initialStates: Record<string, boolean> = {};
-      course.sections.forEach((section) => {
-        section.lectures.forEach((lecture) => {
-          initialStates[lecture.id] = lecture.isCompleted;
-        });
-      });
-      return initialStates;
-    },
+    {},
   );
 
-  // Find the section containing the current lecture and expand it by default
-  React.useEffect(() => {
+  // Initialize lectureStates from course data and sync with lectureCompletion
+  useEffect(() => {
+    const initialStates: Record<string, boolean> = {};
+    course.sections.forEach((section) => {
+      section.lectures.forEach((lecture) => {
+        initialStates[lecture._id] =
+          lectureCompletion[lecture._id] || lecture.isCompleted || false;
+      });
+    });
+    setLectureStates(initialStates);
+  }, [course, lectureCompletion]);
+
+  // Expand the section containing the current lecture ONLY when currentLectureId changes
+  useEffect(() => {
     if (currentLectureId) {
       const sectionId = course.sections.find((section) =>
-        section.lectures.some((lecture) => lecture.id === currentLectureId),
-      )?.id;
+        section.lectures.some((lecture) => lecture._id === currentLectureId),
+      )?._id;
 
-      if (sectionId && !expandedSections.includes(sectionId)) {
-        setExpandedSections((prev) => [...prev, sectionId]);
+      if (sectionId) {
+        setExpandedSections((prev) => {
+          // Only add if not already expanded to avoid conflicts
+          if (!prev.includes(sectionId)) {
+            return [...prev, sectionId];
+          }
+          return prev;
+        });
       }
     }
-  }, [currentLectureId, course.sections, expandedSections]);
+  }, [currentLectureId, course.sections]); // Removed expandedSections from dependencies to prevent infinite loops
 
-  //change this to a backend route and toggle status to completed or not completed via a toggle
   const handleLectureCompletion = (lectureId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent lecture selection when clicking completion button
+    e.stopPropagation();
     const newCompletionState = !lectureStates[lectureId];
     setLectureStates((prev) => ({
       ...prev,
@@ -90,7 +104,7 @@ const CourseSidebar = ({
     onLectureComplete(lectureId, newCompletionState);
   };
 
-  // Calculate progress using current lecture states
+  // Calculate progress
   const totalLectures = course.sections.reduce(
     (acc, section) => acc + section.lectures.length,
     0,
@@ -100,10 +114,6 @@ const CourseSidebar = ({
     totalLectures > 0
       ? Math.round((completedLectures / totalLectures) * 100)
       : 0;
-
-  useEffect(() => {
-    console.log(currentLectureId);
-  }, []);
 
   return (
     <div
@@ -167,13 +177,14 @@ const CourseSidebar = ({
                       <div className="pl-3 space-y-1">
                         {section.lectures.map((lecture) => {
                           const isCompleted =
-                            lectureStates[lecture.id] || false;
+                            lectureStates[lecture._id] || false;
+
                           return (
                             <div
                               key={lecture._id}
                               className={cn(
                                 "flex items-center py-3 px-4 text-sm rounded-md gap-3 group cursor-pointer",
-                                lecture.id === currentLectureId
+                                lecture._id === currentLectureId
                                   ? "bg-primary/10 text-primary border border-primary/20"
                                   : "hover:bg-muted/50",
                               )}
@@ -224,135 +235,5 @@ const CourseSidebar = ({
     </div>
   );
 };
-
-// Default mock data
-const defaultSections: Section[] = [
-  {
-    id: "section-1",
-    title: "Getting Started",
-    lectures: [
-      {
-        id: "lecture-1-1",
-        title: "Course Introduction",
-        duration: "5:32",
-        isCompleted: true,
-      },
-      {
-        id: "lecture-1-2",
-        title: "Setting Up Your Environment",
-        duration: "8:45",
-        isCompleted: true,
-      },
-      {
-        id: "lecture-1-3",
-        title: "React Basics Overview",
-        duration: "12:20",
-        isCompleted: false,
-      },
-    ],
-  },
-  {
-    id: "section-2",
-    title: "React Fundamentals",
-    lectures: [
-      {
-        id: "lecture-2-1",
-        title: "Components and Props",
-        duration: "15:10",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-2-2",
-        title: "State and Lifecycle",
-        duration: "18:35",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-2-3",
-        title: "Handling Events",
-        duration: "10:15",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-2-4",
-        title: "Conditional Rendering",
-        duration: "9:45",
-        isCompleted: false,
-      },
-    ],
-  },
-  {
-    id: "section-3",
-    title: "Hooks in Depth",
-    lectures: [
-      {
-        id: "lecture-3-1",
-        title: "Introduction to Hooks",
-        duration: "14:30",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-3-2",
-        title: "useState Hook",
-        duration: "16:20",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-3-3",
-        title: "useEffect Hook",
-        duration: "20:15",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-3-4",
-        title: "useContext Hook",
-        duration: "18:40",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-3-5",
-        title: "useReducer Hook",
-        duration: "22:10",
-        isCompleted: false,
-      },
-    ],
-  },
-  {
-    id: "section-4",
-    title: "Building a Real Project",
-    lectures: [
-      {
-        id: "lecture-4-1",
-        title: "Project Setup",
-        duration: "10:25",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-4-2",
-        title: "Component Structure",
-        duration: "15:50",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-4-3",
-        title: "Implementing Features",
-        duration: "25:30",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-4-4",
-        title: "Styling with CSS",
-        duration: "18:15",
-        isCompleted: false,
-      },
-      {
-        id: "lecture-4-5",
-        title: "Deployment",
-        duration: "12:40",
-        isCompleted: false,
-      },
-    ],
-  },
-];
 
 export default CourseSidebar;
