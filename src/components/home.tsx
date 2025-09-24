@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -251,7 +251,12 @@ const recommendedCourses = [
 ];
 
 const Home = () => {
-  const { user, navigate } = useAppContext();
+  const { user, navigate, fetchEnrolledCourses, studentCourses } =
+    useAppContext();
+
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,7 +308,7 @@ const Home = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {recentlyViewed.map((course) => (
+                {studentCourses.map((course) => (
                   <Card
                     key={course.id}
                     className="overflow-hidden hover:shadow-lg transition-shadow"
