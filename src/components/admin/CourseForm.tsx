@@ -452,12 +452,11 @@ const CourseForm = () => {
       formData.append("content", data.content || "");
       formData.append("updateVideo", updateVideo.toString());
       if (editingLectureId) {
-        formData.append("currentVideo", videoPreview || "");
+        formData.append("currentVideo", data.videoUrl || ""); // Send current video URL if editing
       }
       if (data.type === "Video" && data.videoFile && updateVideo) {
-        formData.append("videoFile", data.videoFile);
+        formData.append("videoFile", data.videoFile); // Ensure this matches backend
       }
-
       let response;
       if (editingLectureId) {
         response = await axios.put(
@@ -1219,19 +1218,14 @@ const CourseForm = () => {
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
-                              {lecture.type === "Video" ? (
-                                <Video className="h-5 w-5 text-green-500" />
-                              ) : (
-                                <FileText className="h-5 w-5 text-green-500" />
-                              )}
+                              <Video className="h-5 w-5 text-green-500" />
+
                               <div>
                                 <h4 className="font-medium">
                                   {lecIndex + 1}. {lecture.title}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
-                                  {lecture.type === "Video"
-                                    ? "Video Lecture"
-                                    : "Text Lecture"}
+                                  Video Lecture
                                 </p>
                               </div>
                             </div>

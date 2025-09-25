@@ -16,7 +16,7 @@ import AdminDashboard from "./components/admin/AdminDashboard.js";
 
 function App() {
   const location = useLocation();
-  const { axios } = useAppContext();
+  const { axios, navigate } = useAppContext();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
 
