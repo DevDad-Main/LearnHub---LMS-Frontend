@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
@@ -72,6 +72,9 @@ const difficultyLevels = ["Beginner", "Intermediate", "Advanced"];
 
 const courseDetailsSchema = z.object({
   title: z.string().min(5, { message: "Title must be at least 5 characters" }),
+  subtitle: z
+    .string()
+    .min(5, { message: "Subtitle must be at least 5 characters" }),
   description: z
     .string()
     .min(20, { message: "Description must be at least 20 characters" }),
@@ -80,6 +83,12 @@ const courseDetailsSchema = z.object({
   price: z.coerce
     .number()
     .min(0, { message: "Price must be a positive number" }),
+  requirements: z
+    .array(z.string().min(1, { message: "Requirement cannot be empty" }))
+    .min(1, { message: "At least one requirement is needed" }),
+  learnableSkills: z
+    .array(z.string().min(1, { message: "Skill cannot be empty" }))
+    .min(1, { message: "At least one learnable skill is needed" }),
   thumbnail: z.any().optional(),
 });
 
@@ -114,6 +123,8 @@ const CourseForm = () => {
   const [isEditingCourseDetails, setIsEditingCourseDetails] =
     useState(!isEditing);
   const [updateThumbnail, setUpdateThumbnail] = useState(false);
+  const [updateRequirements, setUpdateRequirements] = useState(false);
+  const [updateLearnableSkills, setUpdateLearnableSkills] = useState(false);
   const [courseData, setCourseData] = useState<any>(null);
 
   const [sections, setSections] = useState<any[]>([]);
@@ -131,6 +142,7 @@ const CourseForm = () => {
   const [editingLectureId, setEditingLectureId] = useState<string | null>(null);
   const [currentSectionId, setCurrentSectionId] = useState<string | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [updateVideo, setUpdateVideo] = useState(false);
   const [isSubmittingLecture, setIsSubmittingLecture] = useState(false);
   const [lectureSubmitError, setLectureSubmitError] = useState<string | null>(
     null,
@@ -141,6 +153,7 @@ const CourseForm = () => {
       const fetchCourse = async () => {
         try {
           const response = await axios.get(`/api/v1/course/c/${courseId}`);
+          console.log(response);
           const data = response.data.course;
           setCourseData(data);
           setCourseDetailsSaved(true);
@@ -182,27 +195,66 @@ const CourseForm = () => {
     resolver: zodResolver(courseDetailsSchema),
     defaultValues: {
       title: courseData?.title || "",
+      subtitle: courseData?.subtitle || "",
       description: courseData?.description || "",
       category: courseData?.category || "",
       level: courseData?.level || "",
       price: courseData?.price || 0,
+      requirements: courseData?.requirements || [],
+      learnableSkills: courseData?.learnableSkills || [],
       thumbnail: null,
     },
     mode: "onChange",
+  });
+
+  const {
+    fields: requirementFields,
+    append: appendRequirement,
+    remove: removeRequirement,
+  } = useFieldArray({
+    control: courseForm.control,
+    name: "requirements",
+  });
+
+  const {
+    fields: skillFields,
+    append: appendSkill,
+    remove: removeSkill,
+  } = useFieldArray({
+    control: courseForm.control,
+    name: "learnableSkills",
   });
 
   useEffect(() => {
     if (courseData) {
       courseForm.reset({
         title: courseData.title,
+        subtitle: courseData.subtitle,
         description: courseData.description,
         category: courseData.category,
         level: courseData.level,
         price: courseData.price,
+        requirements: courseData.requirements || [],
+        learnableSkills: courseData.learnableSkills || [],
         thumbnail: null,
       });
+      setUpdateThumbnail(false);
+      setUpdateRequirements(false);
+      setUpdateLearnableSkills(false);
     }
   }, [courseData, courseForm]);
+
+  useEffect(() => {
+    const subscription = courseForm.watch((value, { name }) => {
+      if (name?.startsWith("requirements")) {
+        setUpdateRequirements(true);
+      }
+      if (name?.startsWith("learnableSkills")) {
+        setUpdateLearnableSkills(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [courseForm]);
 
   const sectionForm = useForm({
     resolver: zodResolver(sectionSchema),
@@ -230,16 +282,31 @@ const CourseForm = () => {
     try {
       const formData = new FormData();
       formData.append("title", data.title);
+      formData.append("subtitle", data.subtitle);
       formData.append("description", data.description);
       formData.append("category", data.category);
       formData.append("level", data.level);
       formData.append("price", data.price.toString());
       formData.append("updateThumbnail", updateThumbnail.toString());
+      formData.append("updateRequirements", updateRequirements.toString());
+      formData.append(
+        "updateLearnableSkills",
+        updateLearnableSkills.toString(),
+      );
       if (isEditing) {
         formData.append("currentThumbnail", courseData?.thumbnail || "");
       }
       if (data.thumbnail && updateThumbnail) {
         formData.append("thumbnail", data.thumbnail);
+      }
+      if (updateRequirements) {
+        formData.append("requirements", JSON.stringify(data.requirements));
+      }
+      if (updateLearnableSkills) {
+        formData.append(
+          "learnableSkills",
+          JSON.stringify(data.learnableSkills),
+        );
       }
 
       const endpoint = isEditing
@@ -252,6 +319,8 @@ const CourseForm = () => {
       setCourseDetailsSaved(true);
       setIsEditingCourseDetails(false);
       setUpdateThumbnail(false);
+      setUpdateRequirements(false);
+      setUpdateLearnableSkills(false);
 
       if (!savedCourseId) {
         setSavedCourseId(response.data.courseId);
@@ -381,7 +450,11 @@ const CourseForm = () => {
       formData.append("title", data.title);
       formData.append("type", data.type);
       formData.append("content", data.content || "");
-      if (data.type === "Video" && data.videoFile) {
+      formData.append("updateVideo", updateVideo.toString());
+      if (editingLectureId) {
+        formData.append("currentVideo", videoPreview || "");
+      }
+      if (data.type === "Video" && data.videoFile && updateVideo) {
         formData.append("videoFile", data.videoFile);
       }
 
@@ -438,6 +511,7 @@ const CourseForm = () => {
       setEditingLectureId(null);
       setCurrentSectionId(null);
       setVideoPreview(null);
+      setUpdateVideo(false);
       lectureForm.reset();
     } catch (error: any) {
       console.error("Error saving lecture:", error);
@@ -480,6 +554,7 @@ const CourseForm = () => {
     setEditingLectureId(lecture.id);
     setIsAddingLecture(true);
     setVideoPreview(lecture.videoUrl || null);
+    setUpdateVideo(false);
     lectureForm.reset({
       title: lecture.title,
       type: lecture.type,
@@ -493,6 +568,7 @@ const CourseForm = () => {
     setIsAddingLecture(true);
     setEditingLectureId(null);
     setVideoPreview(null);
+    setUpdateVideo(false);
     lectureForm.reset({
       title: "",
       type: "Video",
@@ -506,6 +582,7 @@ const CourseForm = () => {
     setEditingLectureId(null);
     setCurrentSectionId(null);
     setVideoPreview(null);
+    setUpdateVideo(false);
     setLectureSubmitError(null);
     lectureForm.reset();
   };
@@ -542,12 +619,14 @@ const CourseForm = () => {
       };
       reader.readAsDataURL(file);
       lectureForm.setValue("videoFile", file);
+      setUpdateVideo(true);
     }
   };
 
   const clearVideo = () => {
     setVideoPreview(null);
     lectureForm.setValue("videoFile", null);
+    setUpdateVideo(true);
   };
 
   const canAddMoreSections = sections.length < 20;
@@ -632,6 +711,28 @@ const CourseForm = () => {
                   />
                   <FormField
                     control={courseForm.control}
+                    name="subtitle"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Course Subtitle</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter course subtitle"
+                            {...field}
+                            disabled={
+                              courseDetailsSaved && !isEditingCourseDetails
+                            }
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          A subtitle to display under the title
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={courseForm.control}
                     name="description"
                     render={({ field }) => (
                       <FormItem>
@@ -653,6 +754,110 @@ const CourseForm = () => {
                       </FormItem>
                     )}
                   />
+                  <FormItem>
+                    <FormLabel>Requirements</FormLabel>
+                    <div className="space-y-2">
+                      {requirementFields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <FormControl>
+                            <Input
+                              placeholder="Enter requirement"
+                              {...courseForm.register(`requirements.${index}`)}
+                              disabled={
+                                courseDetailsSaved && !isEditingCourseDetails
+                              }
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => {
+                              removeRequirement(index);
+                              setUpdateRequirements(true);
+                            }}
+                            disabled={
+                              courseDetailsSaved && !isEditingCourseDetails
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        appendRequirement("");
+                        setUpdateRequirements(true);
+                      }}
+                      className="mt-2"
+                      disabled={courseDetailsSaved && !isEditingCourseDetails}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Requirement
+                    </Button>
+                    <FormMessage>
+                      {courseForm.formState.errors.requirements?.message}
+                    </FormMessage>
+                  </FormItem>
+                  <FormItem>
+                    <FormLabel>Learnable Skills</FormLabel>
+                    <div className="space-y-2">
+                      {skillFields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <FormControl>
+                            <Input
+                              placeholder="Enter learnable skill"
+                              {...courseForm.register(
+                                `learnableSkills.${index}`,
+                              )}
+                              disabled={
+                                courseDetailsSaved && !isEditingCourseDetails
+                              }
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => {
+                              removeSkill(index);
+                              setUpdateLearnableSkills(true);
+                            }}
+                            disabled={
+                              courseDetailsSaved && !isEditingCourseDetails
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        appendSkill("");
+                        setUpdateLearnableSkills(true);
+                      }}
+                      className="mt-2"
+                      disabled={courseDetailsSaved && !isEditingCourseDetails}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Skill
+                    </Button>
+                    <FormMessage>
+                      {courseForm.formState.errors.learnableSkills?.message}
+                    </FormMessage>
+                  </FormItem>
                 </div>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -805,13 +1010,18 @@ const CourseForm = () => {
                       onClick={() => {
                         setIsEditingCourseDetails(false);
                         setUpdateThumbnail(false);
+                        setUpdateRequirements(false);
+                        setUpdateLearnableSkills(false);
                         setThumbnailPreview(courseData?.thumbnail || null);
                         courseForm.reset({
                           title: courseData?.title || "",
+                          subtitle: courseData?.subtitle || "",
                           description: courseData?.description || "",
                           category: courseData?.category || "",
                           level: courseData?.level || "",
                           price: courseData?.price || 0,
+                          requirements: courseData?.requirements || [],
+                          learnableSkills: courseData?.learnableSkills || [],
                           thumbnail: null,
                         });
                       }}
