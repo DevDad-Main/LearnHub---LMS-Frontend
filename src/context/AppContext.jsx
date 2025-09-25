@@ -109,6 +109,21 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
+  const [courseById, setCourseById] = useState({});
+
+  //#region Fetch Course By Id
+  const fetchCourseById = async (id) => {
+    const { data } = await axios.get(`/api/v1/course/c/${id}`);
+    if (data.success) {
+      setCourseById(data.course);
+      console.log(data.course);
+    } else {
+      console.log(data.message);
+    }
+  };
+
+  //#endregion
+
   useEffect(() => {
     fetchUser();
     fetchCourses();
@@ -127,6 +142,8 @@ export const AppContextProvider = ({ children }) => {
     fetchEnrolledCourses,
     studentCourses,
     coursesProgress,
+    fetchCourseById,
+    courseById,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

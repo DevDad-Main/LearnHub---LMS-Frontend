@@ -1344,98 +1344,53 @@ const CourseForm = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={lectureForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lecture Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select lecture type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Video">Video</SelectItem>
-                          <SelectItem value="Text">Text</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {lectureForm.watch("type") === "Video" && (
-                  <FormItem>
-                    <FormLabel>Video File</FormLabel>
-                    <div className="mt-2">
-                      {videoPreview ? (
-                        <div className="relative w-full h-40 rounded-md overflow-hidden bg-black">
-                          <video
-                            src={videoPreview}
-                            className="w-full h-full object-contain"
-                            controls
+                <FormItem>
+                  <FormLabel>Video File</FormLabel>
+                  <div className="mt-2">
+                    {videoPreview ? (
+                      <div className="relative w-full h-40 rounded-md overflow-hidden bg-black">
+                        <video
+                          src={videoPreview}
+                          className="w-full h-full object-contain"
+                          controls
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                          onClick={clearVideo}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md">
+                        <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Video className="h-10 w-10 text-gray-400" />
+                            <p className="mt-2 text-sm text-gray-500">
+                              {editingLectureId
+                                ? "Click to change video"
+                                : "Click to upload MP4 video"}
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept=".mp4,video/mp4"
+                            onChange={handleVideoChange}
                           />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                            onClick={clearVideo}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-md">
-                          <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer">
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                              <Video className="h-10 w-10 text-gray-400" />
-                              <p className="mt-2 text-sm text-gray-500">
-                                {editingLectureId
-                                  ? "Click to change video"
-                                  : "Click to upload MP4 video"}
-                              </p>
-                            </div>
-                            <input
-                              type="file"
-                              className="hidden"
-                              accept=".mp4,video/mp4"
-                              onChange={handleVideoChange}
-                            />
-                          </label>
-                        </div>
-                      )}
-                    </div>
-                    <FormDescription>
-                      {editingLectureId
-                        ? "Upload a new MP4 video file to replace the current one (optional)"
-                        : "Upload an MP4 video file for this lecture"}
-                    </FormDescription>
-                  </FormItem>
-                )}
-                {lectureForm.watch("type") === "Text" && (
-                  <FormField
-                    control={lectureForm.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lecture Content</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter lecture content"
-                            className="min-h-24"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        </label>
+                      </div>
                     )}
-                  />
-                )}
+                  </div>
+                  <FormDescription>
+                    {editingLectureId
+                      ? "Upload a new MP4 video file to replace the current one (optional)"
+                      : "Upload an MP4 video file for this lecture"}
+                  </FormDescription>
+                </FormItem>
                 <div className="flex justify-end space-x-2">
                   <Button
                     type="button"
@@ -1464,7 +1419,6 @@ const CourseForm = () => {
           </CardContent>
         </Card>
       )}
-
       {courseDetailsSaved &&
         sections.length > 0 &&
         !isAddingSection &&

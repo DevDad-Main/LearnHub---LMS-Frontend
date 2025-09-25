@@ -32,7 +32,7 @@ const categories = [
 
 const featuredCourses = [
   {
-    id: "1",
+    id: "68d5418149b6fb48a22d8344",
     title: "Complete Web Development Bootcamp",
     instructor: "Jane Smith",
     rating: 4.8,

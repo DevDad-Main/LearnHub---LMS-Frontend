@@ -1,5 +1,5 @@
-import React from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -25,137 +25,56 @@ import {
   Download,
   Infinity,
 } from "lucide-react";
+import { useAppContext } from "../../context/AppContext.jsx";
 
 const CourseDetails = () => {
   const { id } = useParams();
+  const { axios } = useAppContext();
+  const [course, setCourse] = useState(null);
+  const [totalLectures, setTotalLectures] = useState(0);
 
-  // Mock course data - in real app this would come from API
-  const course = {
-    id: id || "1",
-    title: "Complete React Developer in 2024",
-    subtitle:
-      "Learn React, Hooks, Redux, React Router, Next.js, Best Practices and build amazing projects",
-    instructor: {
-      name: "John Smith",
-      title: "Senior Full Stack Developer",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=adccv4254561",
-      // avatar: "../../assets/Default Avatar",
-      rating: 4.8,
-      students: 125000,
-      courses: 12,
-    },
-    thumbnail:
-      "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80",
-    price: 89.99,
-    originalPrice: 199.99,
-    rating: 4.7,
-    reviewCount: 15420,
-    studentCount: 89543,
-    duration: "42 hours",
-    lectures: 156,
-    level: "All Levels",
-    language: "English",
-    category: "Web Development",
-    tags: ["React", "JavaScript", "Frontend", "Web Development", "Redux"],
-    lastUpdated: "November 2023",
-    description: `Master React development from the ground up! This comprehensive course covers everything you need to know to become a professional React developer. You'll learn modern React with Hooks, state management with Redux, routing with React Router, and even Next.js for server-side rendering.
+  function formatDuration(seconds) {
+    if (!seconds) return "0m";
 
-Perfect for beginners and intermediate developers looking to level up their React skills. By the end of this course, you'll have built several real-world projects and have the confidence to tackle any React project.`,
-    whatYouWillLearn: [
-      "Build powerful, fast, user-friendly and reactive web apps",
-      "Provide amazing user experiences by leveraging the power of JavaScript",
-      "Apply for high-paid jobs or work as a freelancer in one the most-demanded sectors",
-      "Learn all about React Hooks and React Components",
-      "Master Redux for state management",
-      "Build real-world projects that you can add to your portfolio",
-    ],
-    requirements: [
-      "Basic JavaScript knowledge is required",
-      "NO prior React or any other JS framework experience is required!",
-      "Basic HTML + CSS knowledge helps but is not a must-have",
-    ],
-    curriculum: [
-      {
-        section: "Getting Started",
-        lectures: 8,
-        duration: "1h 23m",
-        lessons: [
-          { title: "Course Introduction", duration: "5:32", isPreview: true },
-          { title: "What is React?", duration: "8:45", isPreview: true },
-          {
-            title: "Setting up the Development Environment",
-            duration: "12:15",
-            isPreview: false,
-          },
-          {
-            title: "Creating Your First React App",
-            duration: "15:30",
-            isPreview: false,
-          },
-          { title: "Understanding JSX", duration: "18:22", isPreview: false },
-          {
-            title: "Components and Props",
-            duration: "14:45",
-            isPreview: false,
-          },
-          {
-            title: "State and Event Handling",
-            duration: "16:33",
-            isPreview: false,
-          },
-          { title: "Section Summary", duration: "3:45", isPreview: false },
-        ],
-      },
-      {
-        section: "React Fundamentals",
-        lectures: 12,
-        duration: "2h 45m",
-        lessons: [
-          { title: "Component Lifecycle", duration: "22:15", isPreview: false },
-          { title: "Handling Forms", duration: "18:30", isPreview: false },
-          { title: "Lists and Keys", duration: "15:45", isPreview: false },
-          {
-            title: "Conditional Rendering",
-            duration: "12:20",
-            isPreview: false,
-          },
-          { title: "Styling Components", duration: "20:10", isPreview: false },
-          {
-            title: "React Hooks Introduction",
-            duration: "25:30",
-            isPreview: false,
-          },
-          { title: "useState Hook", duration: "18:45", isPreview: false },
-          { title: "useEffect Hook", duration: "24:15", isPreview: false },
-          { title: "Custom Hooks", duration: "19:30", isPreview: false },
-          { title: "Context API", duration: "21:45", isPreview: false },
-          { title: "Error Boundaries", duration: "16:20", isPreview: false },
-          { title: "Section Project", duration: "35:40", isPreview: false },
-        ],
-      },
-      {
-        section: "Advanced React Concepts",
-        lectures: 15,
-        duration: "3h 20m",
-        lessons: [
-          {
-            title: "Performance Optimization",
-            duration: "28:15",
-            isPreview: false,
-          },
-          {
-            title: "React.memo and useMemo",
-            duration: "22:30",
-            isPreview: false,
-          },
-          { title: "useCallback Hook", duration: "18:45", isPreview: false },
-          { title: "Code Splitting", duration: "20:10", isPreview: false },
-          { title: "Lazy Loading", duration: "16:30", isPreview: false },
-          // ... more lessons
-        ],
-      },
-    ],
-  };
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secondsToShow = Math.floor((seconds % 3600) / 60 / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      return `${minutes}m`;
+    }
+  }
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchCourseById = async () => {
+      try {
+        const { data } = await axios.get(`/api/v1/course/c/${id}`);
+        if (data.success) {
+          setCourse(data.course);
+          console.log(data);
+
+          setTotalLectures(
+            data.course?.sections?.reduce((previous, current) => {
+              return previous + current.lectures.length;
+            }, 0),
+          );
+        } else {
+          console.error(data.message);
+        }
+      } catch (err) {
+        console.error("Failed to fetch course:", err);
+      }
+    };
+    fetchCourseById();
+  }, [id, axios]);
+
+  if (!course) {
+    return <div className="p-6 text-center">Loading course...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -167,44 +86,50 @@ Perfect for beginners and intermediate developers looking to level up their Reac
             <div className="lg:col-span-2">
               <div className="mb-4">
                 <Badge variant="secondary" className="mb-2">
-                  {course.category}
+                  {course?.category}
                 </Badge>
                 <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                  {course.title}
+                  {course?.title}
                 </h1>
-                <p className="text-lg text-slate-300 mb-6">{course.subtitle}</p>
+                <p className="text-lg text-slate-300 mb-6">
+                  {course?.subtitle}
+                </p>
               </div>
 
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center">
                   <span className="text-yellow-400 mr-1">★</span>
-                  <span className="font-semibold mr-1">{course.rating}</span>
+                  <span className="font-semibold mr-1">{course?.rating}</span>
                   <span className="text-slate-300">
-                    ({course.reviewCount.toLocaleString()} ratings)
+                    {/* ({course?.reviewCount?.toLocaleString()} ratings) */}(
+                    {"12,632"} ratings)
                   </span>
                 </div>
                 <div className="flex items-center text-slate-300">
                   <Users className="h-4 w-4 mr-1" />
-                  {course.studentCount.toLocaleString()} students
+                  {course?.enrolledStudents}{" "}
+                  {course?.enrolledStudents.length === 1
+                    ? "students"
+                    : "student"}
                 </div>
                 <div className="flex items-center text-slate-300">
                   <Clock className="h-4 w-4 mr-1" />
-                  {course.duration}
+                  {formatDuration(course?.duration)}
                 </div>
               </div>
 
               {/* Instructor */}
               <div className="flex items-center mb-6">
                 <Avatar className="h-12 w-12 mr-4">
-                  <AvatarImage src={course.instructor.avatar} />
+                  <AvatarImage src={course?.instructor?.avatar} />
                   <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="font-semibold">
-                    Created by {course.instructor.name}
+                    Created by {course?.instructor?.name}
                   </p>
                   <p className="text-slate-300 text-sm">
-                    {course.instructor.title}
+                    {course?.instructor?.title}
                   </p>
                 </div>
               </div>
@@ -212,9 +137,12 @@ Perfect for beginners and intermediate developers looking to level up their Reac
               <div className="flex flex-wrap items-center gap-4 text-sm text-slate-300">
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 mr-1" />
-                  {course.language}
+                  {course?.language}
                 </div>
-                <div>Last updated {course.lastUpdated}</div>
+                <div>
+                  Last updated{" "}
+                  {new Date(course?.lastUpdated).toLocaleDateString()}
+                </div>
               </div>
             </div>
 
@@ -223,8 +151,8 @@ Perfect for beginners and intermediate developers looking to level up their Reac
               <Card>
                 <div className="relative">
                   <img
-                    src={course.thumbnail}
-                    alt={course.title}
+                    src={course?.thumbnail}
+                    alt={course?.title}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
                   <Button
@@ -238,10 +166,10 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <span className="text-3xl font-bold">
-                        ${course.price}
+                        ${course?.price}
                       </span>
                       <span className="text-lg text-muted-foreground line-through ml-2">
-                        ${course.originalPrice}
+                        ${272}
                       </span>
                     </div>
                     <Badge variant="destructive">67% off</Badge>
@@ -262,9 +190,10 @@ Perfect for beginners and intermediate developers looking to level up their Reac
         </div>
       </div>
 
+      {/* Main content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Tabs */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
@@ -282,86 +211,12 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {course.whatYouWillLearn.map((item, index) => (
+                      {course?.learnableSkills?.map((item, index) => (
                         <div key={index} className="flex items-start">
                           <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                           <span className="text-sm">{item}</span>
                         </div>
                       ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Course content */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Course content</CardTitle>
-                    <CardDescription>
-                      {course.curriculum.reduce(
-                        (acc, section) => acc + section.lectures,
-                        0,
-                      )}{" "}
-                      lectures • {course.duration} total length
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {course.curriculum.slice(0, 2).map((section, index) => (
-                        <div key={index} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-center mb-2">
-                            <h4 className="font-semibold">{section.section}</h4>
-                            <span className="text-sm text-muted-foreground">
-                              {section.lectures} lectures • {section.duration}
-                            </span>
-                          </div>
-                          <div className="space-y-2">
-                            {section.lessons
-                              .slice(0, 3)
-                              .map((lesson, lessonIndex) => (
-                                <div
-                                  key={lessonIndex}
-                                  className="flex items-center justify-between text-sm"
-                                >
-                                  <div className="flex items-center">
-                                    {lesson.isPreview ? (
-                                      <Play className="h-4 w-4 mr-2 text-primary" />
-                                    ) : (
-                                      <Lock className="h-4 w-4 mr-2 text-muted-foreground" />
-                                    )}
-                                    <span
-                                      className={
-                                        lesson.isPreview
-                                          ? "text-primary"
-                                          : "text-muted-foreground"
-                                      }
-                                    >
-                                      {lesson.title}
-                                    </span>
-                                    {lesson.isPreview && (
-                                      <Badge
-                                        variant="outline"
-                                        className="ml-2 text-xs"
-                                      >
-                                        Preview
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <span className="text-muted-foreground">
-                                    {lesson.duration}
-                                  </span>
-                                </div>
-                              ))}
-                            {section.lessons.length > 3 && (
-                              <p className="text-sm text-muted-foreground">
-                                + {section.lessons.length - 3} more lectures
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                      <Button variant="outline" className="w-full">
-                        Show all sections
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -373,7 +228,7 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {course.requirements.map((req, index) => (
+                      {course?.requirements?.map((req, index) => (
                         <li key={index} className="flex items-start">
                           <span className="w-2 h-2 bg-foreground rounded-full mt-2 mr-3 flex-shrink-0"></span>
                           <span className="text-sm">{req}</span>
@@ -390,8 +245,8 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   </CardHeader>
                   <CardContent>
                     <div className="prose prose-sm max-w-none">
-                      {course.description
-                        .split("\n\n")
+                      {course?.description
+                        ?.split("\n\n")
                         .map((paragraph, index) => (
                           <p key={index} className="mb-4">
                             {paragraph}
@@ -407,27 +262,28 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardHeader>
                     <CardTitle>Course Curriculum</CardTitle>
                     <CardDescription>
-                      {course.curriculum.reduce(
+                      {course?.curriculum?.reduce(
                         (acc, section) => acc + section.lectures,
                         0,
                       )}{" "}
-                      lectures • {course.duration} total length
+                      lectures • {formatDuration(course?.duration)} total length
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {course.curriculum.map((section, index) => (
+                      {course?.sections.map((section, index) => (
                         <div key={index} className="border rounded-lg p-4">
                           <div className="flex justify-between items-center mb-4">
                             <h4 className="font-semibold text-lg">
-                              {section.section}
+                              {section.title}
                             </h4>
                             <span className="text-sm text-muted-foreground">
-                              {section.lectures} lectures • {section.duration}
+                              {section.lectures.length} lectures •{" "}
+                              {formatDuration(section.duration)}
                             </span>
                           </div>
                           <div className="space-y-3">
-                            {section.lessons.map((lesson, lessonIndex) => (
+                            {section.lectures?.map((lesson, lessonIndex) => (
                               <div
                                 key={lessonIndex}
                                 className="flex items-center justify-between p-2 hover:bg-muted/50 rounded"
@@ -457,7 +313,7 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                                   )}
                                 </div>
                                 <span className="text-muted-foreground text-sm">
-                                  {lesson.duration}
+                                  {formatDuration(lesson.duration)}
                                 </span>
                               </div>
                             ))}
@@ -477,47 +333,32 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardContent>
                     <div className="flex items-start space-x-4 mb-6">
                       <Avatar className="h-20 w-20">
-                        <AvatarImage src={course.instructor.avatar} />
+                        <AvatarImage src={course?.instructor?.avatar} />
                         <AvatarFallback>JS</AvatarFallback>
                       </Avatar>
                       <div>
                         <h3 className="text-xl font-semibold mb-1">
-                          {course.instructor.name}
+                          {course?.instructor?.name}
                         </h3>
                         <p className="text-muted-foreground mb-3">
-                          {course.instructor.title}
+                          {course?.instructor?.title}
                         </p>
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                            {course.instructor.rating} Instructor Rating
+                            {course?.instructor?.rating} Instructor Rating
                           </div>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            {course.instructor.students.toLocaleString()}{" "}
+                            {course?.instructor?.students?.toLocaleString()}{" "}
                             Students
                           </div>
                           <div className="flex items-center">
                             <Play className="h-4 w-4 mr-1" />
-                            {course.instructor.courses} Courses
+                            {course?.instructor?.courses} Courses
                           </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="prose prose-sm max-w-none">
-                      <p>
-                        John is a senior full-stack developer with over 8 years
-                        of experience in web development. He has worked with
-                        companies ranging from startups to Fortune 500
-                        companies, building scalable web applications using
-                        modern technologies.
-                      </p>
-                      <p>
-                        His expertise includes React, Node.js, Python, and cloud
-                        technologies. John is passionate about teaching and has
-                        helped thousands of students transition into successful
-                        tech careers.
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -528,112 +369,10 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <CardHeader>
                     <CardTitle>Student Reviews</CardTitle>
                     <CardDescription>
-                      {course.reviewCount.toLocaleString()} reviews for this
+                      {course?.reviewCount?.toLocaleString()} reviews for this
                       course
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {/* Review Summary */}
-                      <div className="flex items-center space-x-8">
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-yellow-500">
-                            {course.rating}
-                          </div>
-                          <div className="flex items-center justify-center mb-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-4 w-4 ${
-                                  star <= Math.floor(course.rating)
-                                    ? "text-yellow-500 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Course Rating
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          {[5, 4, 3, 2, 1].map((rating) => (
-                            <div
-                              key={rating}
-                              className="flex items-center mb-1"
-                            >
-                              <span className="text-sm w-8">{rating}★</span>
-                              <div className="flex-1 h-2 bg-muted rounded-full mx-2">
-                                <div
-                                  className="h-full bg-yellow-500 rounded-full"
-                                  style={{
-                                    width: `${rating === 5 ? 70 : rating === 4 ? 20 : rating === 3 ? 7 : rating === 2 ? 2 : 1}%`,
-                                  }}
-                                ></div>
-                              </div>
-                              <span className="text-sm text-muted-foreground w-8">
-                                {rating === 5
-                                  ? "70%"
-                                  : rating === 4
-                                    ? "20%"
-                                    : rating === 3
-                                      ? "7%"
-                                      : rating === 2
-                                        ? "2%"
-                                        : "1%"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <Separator />
-
-                      {/* Individual Reviews */}
-                      <div className="space-y-6">
-                        {[1, 2, 3].map((review) => (
-                          <div
-                            key={review}
-                            className="border-b pb-6 last:border-b-0"
-                          >
-                            <div className="flex items-start space-x-4">
-                              <Avatar>
-                                <AvatarImage
-                                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${review}`}
-                                />
-                                <AvatarFallback>U{review}</AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <span className="font-semibold">
-                                    Student {review}
-                                  </span>
-                                  <div className="flex items-center">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star
-                                        key={star}
-                                        className="h-4 w-4 text-yellow-500 fill-current"
-                                      />
-                                    ))}
-                                  </div>
-                                  <span className="text-sm text-muted-foreground">
-                                    2 weeks ago
-                                  </span>
-                                </div>
-                                <p className="text-sm">
-                                  Excellent course! The instructor explains
-                                  everything clearly and the projects are very
-                                  practical. I learned so much about React and
-                                  feel confident building my own applications
-                                  now.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
                 </Card>
               </TabsContent>
             </Tabs>
@@ -645,8 +384,8 @@ Perfect for beginners and intermediate developers looking to level up their Reac
               <Card>
                 <div className="relative">
                   <img
-                    src={course.thumbnail}
-                    alt={course.title}
+                    src={course?.thumbnail}
+                    alt={course?.title}
                     className="w-full h-48 object-cover rounded-t-lg"
                   />
                   <Button
@@ -660,10 +399,10 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <span className="text-3xl font-bold">
-                        ${course.price}
+                        ${course?.price}
                       </span>
                       <span className="text-lg text-muted-foreground line-through ml-2">
-                        ${course.originalPrice}
+                        ${course?.originalPrice}
                       </span>
                     </div>
                     <Badge variant="destructive">67% off</Badge>
@@ -686,49 +425,28 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                         <Clock className="h-4 w-4 mr-2" />
                         Duration
                       </span>
-                      <span>{course.duration}</span>
+                      <span>{formatDuration(course?.duration)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center">
                         <Play className="h-4 w-4 mr-2" />
                         Lectures
                       </span>
-                      <span>{course.lectures}</span>
+                      <span>{totalLectures}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center">
                         <Award className="h-4 w-4 mr-2" />
                         Level
                       </span>
-                      <span>{course.level}</span>
+                      <span>{course?.level}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center">
                         <Globe className="h-4 w-4 mr-2" />
                         Language
                       </span>
-                      <span>{course.language}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center">
-                        <Smartphone className="h-4 w-4 mr-2" />
-                        Mobile Access
-                      </span>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center">
-                        <Download className="h-4 w-4 mr-2" />
-                        Downloadable
-                      </span>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center">
-                        <Infinity className="h-4 w-4 mr-2" />
-                        Lifetime Access
-                      </span>
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>{course?.language || "English"}</span>
                     </div>
                   </div>
 
@@ -737,7 +455,7 @@ Perfect for beginners and intermediate developers looking to level up their Reac
                   <div className="space-y-2">
                     <h4 className="font-semibold">Tags</h4>
                     <div className="flex flex-wrap gap-2">
-                      {course.tags.map((tag, index) => (
+                      {course?.tags?.map((tag, index) => (
                         <Badge key={index} variant="outline">
                           {tag}
                         </Badge>
