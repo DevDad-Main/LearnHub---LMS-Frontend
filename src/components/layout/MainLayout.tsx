@@ -33,7 +33,7 @@ import { useAppContext } from "../../context/AppContext";
 // }
 
 const MainLayout = () => {
-  const { user, handleLogout } = useAppContext();
+  const { user, instructor, handleLogout } = useAppContext();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -126,7 +126,7 @@ const MainLayout = () => {
             {/*   </Button> */}
             {/* ) : null} */}
 
-            {user ? (
+            {instructor ? (
               <Button>
                 <Link to={"/instructor/dashboard"}>Instructor Dashboard</Link>
               </Button>

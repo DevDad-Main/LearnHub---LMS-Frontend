@@ -12,6 +12,7 @@ export const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [instructor, setInstructor] = useState(null);
   const [courses, setCourses] = useState([]);
   const [studentCourses, setStudentCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
@@ -54,6 +55,24 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
+  //#region Fetch Instructor
+  const fetchInstructor = async () => {
+    try {
+      const { data } = await axios.get(
+        "/api/v1/instructor/instructor-authenticated",
+      );
+      if (data.success) {
+        setInstructor(data.instructor);
+      }
+    } catch (error) {
+      toast({
+        title: error.message,
+      });
+      // toast.error(error.message);
+    }
+  };
+  //#endregion
+
   //#region Handle User Logout
   const handleLogout = async () => {
     try {
@@ -67,7 +86,6 @@ export const AppContextProvider = ({ children }) => {
         }
 
         setUser(null);
-        setDraftOrder(null);
         setCartItems([]);
         navigate("/");
         toast.success(data.message);
@@ -80,17 +98,57 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
-  //#region Get Logged in admin/instructor courses
-  const fetchCourses = async () => {
+  //#region Handle Instructor Logout
+  const handleLogoutInstructor = async () => {
     try {
-      const { data } = await axios.get("/api/v1/course/courses");
+      const { data } = await axios.get("/api/v1/instructor/signout");
+
       if (data.success) {
-        setCourses(data.courses);
+        if (user?.authProvider === "google") {
+          // clears the Google OAuth session and above becuase if we have a success we clear the cookies aswell
+          googleLogout();
+        }
+
+        navigate("/");
+        setInstructor(null);
+        setCartItems([]);
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
       }
     } catch (error) {
-      console.error("Error fetching courses:", error);
+      toast.error(error.message);
     }
   };
+  //#endregion
+
+  //#region Get Logged in admin/instructor courses
+  // const fetchCourses = async () => {
+  //   if (!user || !instructor) return;
+  //   try {
+  //     const { data } = await axios.get("/api/v1/course/courses");
+  //     if (data.success) {
+  //       setCourses(data.courses);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching courses:", error);
+  //   }
+  // };
+  const fetchInstructorsCourses = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/instructor/courses");
+
+      if (data.success) {
+        console.log(data.courses);
+        setCourses(data.courses);
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   //#endregion
 
   //#region Get Logged In students enrolled courses
@@ -126,19 +184,25 @@ export const AppContextProvider = ({ children }) => {
 
   useEffect(() => {
     fetchUser();
-    fetchCourses();
+    fetchInstructor();
+    // fetchCourses();
+    fetchInstructorsCourses();
   }, []);
 
   const value = {
     navigate,
     user,
     setUser,
+    instructor,
+    setInstructor,
     axios,
     fetchUser,
     responseMessage,
     handleLogout,
+    handleLogoutInstructor,
     courses,
-    fetchCourses,
+    // fetchCourses,
+    fetchInstructorsCourses,
     fetchEnrolledCourses,
     studentCourses,
     coursesProgress,

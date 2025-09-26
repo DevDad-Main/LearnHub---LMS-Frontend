@@ -6,20 +6,36 @@ import * as z from "zod";
 import { Eye, EyeOff, Loader2, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { GoogleLogin } from "@react-oauth/google";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppContext } from "../../../context/AppContext";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const InstructorLogin = () => {
-  const { axios } = useAppContext();
+  const { axios, setInstructor } = useAppContext();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
@@ -37,7 +53,7 @@ const InstructorLogin = () => {
     setIsLoading(true);
     try {
       const response = await axios.post("/api/v1/instructor/login", data);
-      
+
       if (response.data.success) {
         toast({
           title: "Welcome back!",
@@ -56,6 +72,40 @@ const InstructorLogin = () => {
     }
   };
 
+  const responseMessage = async (response) => {
+    try {
+      // response.credential is a JWT from Google
+      const { data } = await axios.post("/api/v1/instructor/google-login", {
+        credential: response.credential,
+      });
+
+      if (data.success) {
+        toast({
+          title: "Login Successful!",
+          description: "Instuctor Successfully Logged In",
+        });
+        console.log(data);
+        setInstructor(data.instructor);
+        // setShowUserLogin(false);
+        navigate("/instructor/dashboard");
+      } else {
+        console.log(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load profile data",
+      });
+    }
+  };
+
+  const errorMessage = (error) => {
+    console.log(error);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -65,20 +115,27 @@ const InstructorLogin = () => {
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Instructor Portal</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Instructor Portal
+          </h1>
           <p className="text-gray-600 mt-2">Sign in to manage your courses</p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Sign In
+            </CardTitle>
             <CardDescription className="text-center">
               Enter your credentials to access your instructor account
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -155,6 +212,8 @@ const InstructorLogin = () => {
                     "Sign In"
                   )}
                 </Button>
+
+                <GoogleLogin onSuccess={responseMessage} />
               </form>
             </Form>
 

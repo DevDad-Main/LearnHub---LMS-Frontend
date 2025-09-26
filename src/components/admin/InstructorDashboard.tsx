@@ -9,17 +9,46 @@ import {
   Settings,
   Bell,
   PlusCircle,
+  VideoIcon,
+  LogOut,
 } from "lucide-react";
 import CourseGrid from "./CourseGrid";
 import { useAppContext } from "../../context/AppContext";
 
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
-  const { axios, fetchCourses, courses } = useAppContext();
+  const {
+    axios,
+    instructor,
+    courses,
+    fetchInstructorsCourses,
+    handleLogoutInstructor,
+  } = useAppContext();
+  // const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   const fetchInstructorsCourses = async () => {
+  //     try {
+  //       const { data } = await axios.get("/api/v1/instructor/courses", {
+  //         instructor,
+  //       });
+  //
+  //       if (data.success) {
+  //         console.log(data.courses);
+  //         setCourses(data.courses);
+  //       } else {
+  //         console.log(data.message);
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   fetchInstructorsCourses();
+  // }, []);
+
   useEffect(() => {
-    fetchCourses();
+    fetchInstructorsCourses();
   }, []);
 
   const handleCreateCourse = () => {
@@ -31,6 +60,15 @@ const InstructorDashboard = () => {
       {/* Sidebar */}
       <div className="w-64 border-r bg-card p-4 flex flex-col">
         <nav className="space-y-2 flex-1">
+          <Button
+            className="w-full justify-start mb-20"
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            <VideoIcon className="h-5 w-5 mr-2" />
+            LearnHub - HomePage
+          </Button>
           <Button
             variant={activeTab === "courses" ? "secondary" : "ghost"}
             className="w-full justify-start"
@@ -69,10 +107,13 @@ const InstructorDashboard = () => {
           <Button
             variant={activeTab === "settings" ? "secondary" : "ghost"}
             className="w-full justify-start"
-            onClick={() => setActiveTab("settings")}
+            onClick={() => {
+              setActiveTab("settings");
+              navigate("/instructor/profile");
+            }}
           >
             <Settings className="h-5 w-5 mr-2" />
-            Settings
+            Profile Settings
           </Button>
         </nav>
 
@@ -82,7 +123,7 @@ const InstructorDashboard = () => {
               <User size={20} />
             </div>
             <div className="ml-3">
-              <p className="font-medium">Instructor</p>
+              <p className="font-medium">{instructor?.name}</p>
               <p className="text-xs text-muted-foreground">
                 instructor@example.com
               </p>
@@ -103,6 +144,10 @@ const InstructorDashboard = () => {
             <Button onClick={handleCreateCourse}>
               <PlusCircle className="mr-2 h-4 w-4" />
               Create Course
+            </Button>
+            <Button onClick={handleLogoutInstructor}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Log Out
             </Button>
           </div>
         </header>

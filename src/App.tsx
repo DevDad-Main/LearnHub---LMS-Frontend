@@ -10,34 +10,82 @@ import Cart from "./pages/cart";
 import routes from "tempo-routes";
 import { useAppContext } from "./context/AppContext";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import ProtectedInstructorRoute from "./components/ProtectedInstructorRoute";
 import CourseVideoPlayerPage from "./components/course/CourseVideoPlayerPage";
 import CourseForm from "./components/admin/CourseForm.js";
 import InstructorDashboard from "./components/admin/InstructorDashboard.tsx";
 import InstructorLogin from "./pages/instructor/auth/InstructorLogin.js";
 import InstructorRegister from "./pages/instructor/auth/InstructorRegister.js";
 import InstructorProfile from "./pages/instructor/InstructorProfile.js";
+import { Toaster } from "./components/ui/toaster.tsx";
 
 function App() {
   const location = useLocation();
   const { axios, navigate } = useAppContext();
   const [user, setUser] = useState(null);
+  const [instructor, setInstructor] = useState(null);
   const [isLoading, setIsLoading] = useState(true); // Add loading state
 
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     try {
+  //       const { data } = await axios.get("/api/v1/users/user-authenticated");
+  //       if (data.success) {
+  //         setUser(data.user);
+  //       }
+  //     } catch (error) {
+  //       // toast.error(error.message);
+  //       setUser(null);
+  //     } finally {
+  //       setIsLoading(false); // Set loading to false after auth check
+  //     }
+  //   };
+  //   fetchUser();
+  // }, []);
+  //
+  // useEffect(() => {
+  //   const fetchInstructor = async () => {
+  //     try {
+  //       const { data } = await axios.get(
+  //         "/api/v1/instructor/instructor-authenticated",
+  //       );
+  //       if (data.success) {
+  //         console.log(data);
+  //         setInstructor(data.instructor);
+  //       }
+  //     } catch (error) {
+  //       // toast.error(error.message);
+  //       setInstructor(null);
+  //     } finally {
+  //       setIsLoading(false); // Set loading to false after auth check
+  //     }
+  //   };
+  //   fetchInstructor();
+  // }, []);
+
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchAuth = async () => {
       try {
-        const { data } = await axios.get("/api/v1/users/user-authenticated");
-        if (data.success) {
-          setUser(data.user);
+        const [userResponse, instructorResponse] = await Promise.all([
+          axios.get("/api/v1/users/user-authenticated"),
+          axios.get("/api/v1/instructor/instructor-authenticated"),
+        ]);
+
+        if (userResponse.data.success) {
+          setUser(userResponse.data.user);
+        }
+        if (instructorResponse.data.success) {
+          setInstructor(instructorResponse.data.instructor);
         }
       } catch (error) {
-        // toast.error(error.message);
+        console.error("Auth error:", error.response || error);
         setUser(null);
+        setInstructor(null);
       } finally {
-        setIsLoading(false); // Set loading to false after auth check
+        setIsLoading(false);
       }
     };
-    fetchUser();
+    fetchAuth();
   }, []);
 
   const isAuthPage =
@@ -56,67 +104,97 @@ function App() {
   }
 
   return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <Routes>
-        {/* Auth pages (no MainLayout) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+    <>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Routes>
+          {/* Auth pages (no MainLayout) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        <Route path="/instructor/login" element={<InstructorLogin />} />
-        <Route path="/instructor/register" element={<InstructorRegister />} />
-        <Route path="/instructor/profile" element={<InstructorProfile />} />
-
-        {/* Everything else inside MainLayout */}
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/course/:id" element={<CourseDetails />} />
+          {/* Everything else inside MainLayout */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/course/:id" element={<CourseDetails />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute user={user}>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <ProtectedRoute user={user}>
+                  <Cart />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/course/learn/:id"
+              element={
+                <ProtectedRoute user={user}>
+                  <CourseVideoPlayerPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/course/add-course"
+              element={
+                <ProtectedInstructorRoute instructor={instructor}>
+                  <CourseForm />
+                </ProtectedInstructorRoute>
+              }
+            />
+          </Route>
           <Route
-            path="/dashboard"
+            path="/instructor/dashboard"
             element={
-              <ProtectedRoute user={user}>
-                <Dashboard />
-              </ProtectedRoute>
+              <ProtectedInstructorRoute instructor={instructor}>
+                <InstructorDashboard />
+              </ProtectedInstructorRoute>
             }
           />
           <Route
-            path="/cart"
+            path="/instructor/courses"
             element={
-              <ProtectedRoute user={user}>
-                <Cart />
-              </ProtectedRoute>
+              <ProtectedInstructorRoute instructor={instructor}>
+                <InstructorDashboard />
+              </ProtectedInstructorRoute>
             }
           />
           <Route
-            path="/course/learn/:id"
+            path="/instructor/course/create"
             element={
-              <ProtectedRoute user={user}>
-                <CourseVideoPlayerPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/course/add-course"
-            element={
-              <ProtectedRoute user={user}>
+              <ProtectedInstructorRoute instructor={instructor}>
                 <CourseForm />
-              </ProtectedRoute>
+              </ProtectedInstructorRoute>
             }
           />
-        </Route>
-        <Route
-          path="/instructor/dashboard"
-          element={
-            <ProtectedRoute user={user}>
-              <InstructorDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/instructor/courses" element={<InstructorDashboard />} />
-        <Route path="/instructor/course/create" element={<CourseForm />} />
-        <Route path="/instructor/course/:courseId" element={<CourseForm />} />
-      </Routes>
-      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
-    </Suspense>
+          <Route
+            path="/instructor/course/:courseId"
+            element={
+              <ProtectedInstructorRoute instructor={instructor}>
+                <CourseForm />
+              </ProtectedInstructorRoute>
+            }
+          />
+          <Route path="/instructor/login" element={<InstructorLogin />} />
+          <Route path="/instructor/register" element={<InstructorRegister />} />
+          <Route
+            path="/instructor/profile"
+            element={
+              <ProtectedInstructorRoute instructor={instructor}>
+                <InstructorProfile />
+              </ProtectedInstructorRoute>
+            }
+          />
+        </Routes>
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+      </Suspense>
+      <Toaster />
+    </>
   );
 }
 
