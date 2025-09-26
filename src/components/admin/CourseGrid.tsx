@@ -168,7 +168,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                     key={course._id}
                     course={course}
                     viewMode={viewMode}
-                    onEdit={() => navigate(`/admin/course/${course._id}`)}
+                    onEdit={() => navigate(`/instructor/course/${course._id}`)}
                   />
                 ))}
               </div>
@@ -178,7 +178,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                   <p className="text-muted-foreground mb-4">
                     No courses found matching your criteria
                   </p>
-                  <Button onClick={() => navigate("/admin/course/create")}>
+                  <Button onClick={() => navigate("/instructor/course/create")}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Your First Course
                   </Button>
@@ -203,7 +203,9 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                       key={course._id}
                       course={course}
                       viewMode={viewMode}
-                      onEdit={() => navigate(`/admin/course/${course._id}`)}
+                      onEdit={() =>
+                        navigate(`/instructor/course/${course._id}`)
+                      }
                     />
                   ))}
               </div>
@@ -213,7 +215,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                   <p className="text-muted-foreground mb-4">
                     No published courses found
                   </p>
-                  <Button onClick={() => navigate("/admin/course/create")}>
+                  <Button onClick={() => navigate("/instructor/course/create")}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Course
                   </Button>
@@ -239,7 +241,9 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                       key={course._id}
                       course={course}
                       viewMode={viewMode}
-                      onEdit={() => navigate(`/admin/course/${course._id}`)}
+                      onEdit={() =>
+                        navigate(`/instructor/course/${course._id}`)
+                      }
                     />
                   ))}
               </div>
@@ -249,7 +253,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                   <p className="text-muted-foreground mb-4">
                     No draft courses found
                   </p>
-                  <Button onClick={() => navigate("/admin/course/create")}>
+                  <Button onClick={() => navigate("/instructor/course/create")}>
                     <Plus className="mr-2 h-4 w-4" />
                     Create Course
                   </Button>

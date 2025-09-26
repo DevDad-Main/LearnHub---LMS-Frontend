@@ -12,7 +12,10 @@ import { useAppContext } from "./context/AppContext";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CourseVideoPlayerPage from "./components/course/CourseVideoPlayerPage";
 import CourseForm from "./components/admin/CourseForm.js";
-import AdminDashboard from "./components/admin/AdminDashboard.js";
+import InstructorDashboard from "./components/admin/InstructorDashboard.tsx";
+import InstructorLogin from "./pages/instructor/auth/InstructorLogin.js";
+import InstructorRegister from "./pages/instructor/auth/InstructorRegister.js";
+import InstructorProfile from "./pages/instructor/InstructorProfile.js";
 
 function App() {
   const location = useLocation();
@@ -59,6 +62,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
+        <Route path="/instructor/login" element={<InstructorLogin />} />
+        <Route path="/instructor/register" element={<InstructorRegister />} />
+        <Route path="/instructor/profile" element={<InstructorProfile />} />
+
         {/* Everything else inside MainLayout */}
         <Route element={<MainLayout />}>
           <Route path="/" element={<Home />} />
@@ -95,18 +102,18 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute user={user}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/admin/courses" element={<AdminDashboard />} />
-          <Route path="/admin/course/create" element={<CourseForm />} />
-          <Route path="/admin/course/:courseId" element={<CourseForm />} />
         </Route>
+        <Route
+          path="/instructor/dashboard"
+          element={
+            <ProtectedRoute user={user}>
+              <InstructorDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/instructor/courses" element={<InstructorDashboard />} />
+        <Route path="/instructor/course/create" element={<CourseForm />} />
+        <Route path="/instructor/course/:courseId" element={<CourseForm />} />
       </Routes>
       {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </Suspense>

@@ -128,7 +128,7 @@ const MainLayout = () => {
 
             {user ? (
               <Button>
-                <Link to={"/admin/dashboard"}>Instructor Dashboard</Link>
+                <Link to={"/instructor/dashboard"}>Instructor Dashboard</Link>
               </Button>
             ) : null}
 

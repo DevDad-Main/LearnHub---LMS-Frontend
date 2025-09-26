@@ -686,7 +686,7 @@ const CourseForm = () => {
     <div className="bg-background p-6 rounded-lg shadow-sm w-full max-w-5xl mx-auto space-y-8">
       <Button
         variant="outline"
-        onClick={() => navigate("/admin/courses")}
+        onClick={() => navigate("/instructor/courses")}
         className="mb-6"
       >
         ← Back to Course Management
@@ -1596,13 +1596,11 @@ const CourseForm = () => {
         sections.length > 0 &&
         !isAddingSection &&
         !isAddingLecture && (
-          <Card>
-            <CardFooter className="flex justify-center">
-              <Button onClick={() => navigate("/admin/courses")} size="lg">
-                {isEditing ? "Save Changes" : "Complete Course Creation"}
-              </Button>
-            </CardFooter>
-          </Card>
+          <CardFooter className="flex justify-center">
+            <Button onClick={() => navigate("/instructor/courses")} size="lg">
+              {isEditing ? "Save Changes" : "Complete Course Creation"}
+            </Button>
+          </CardFooter>
         )}
     </div>
   );

@@ -13,7 +13,7 @@ import {
 import CourseGrid from "./CourseGrid";
 import { useAppContext } from "../../context/AppContext";
 
-const AdminDashboard = () => {
+const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
   const { axios, fetchCourses, courses } = useAppContext();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleCreateCourse = () => {
-    navigate("/admin/course/create");
+    navigate("/instructor/course/create");
   };
 
   return (
@@ -36,7 +36,7 @@ const AdminDashboard = () => {
             className="w-full justify-start"
             onClick={() => {
               setActiveTab("courses");
-              navigate("/admin/courses");
+              navigate("/instructor/courses");
             }}
           >
             <BookOpen className="h-5 w-5 mr-2" />
@@ -82,8 +82,10 @@ const AdminDashboard = () => {
               <User size={20} />
             </div>
             <div className="ml-3">
-              <p className="font-medium">Admin User</p>
-              <p className="text-xs text-muted-foreground">admin@example.com</p>
+              <p className="font-medium">Instructor</p>
+              <p className="text-xs text-muted-foreground">
+                instructor@example.com
+              </p>
             </div>
           </div>
         </div>
@@ -114,4 +116,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default InstructorDashboard;
