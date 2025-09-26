@@ -62,7 +62,21 @@ const CourseSidebar = ({
   const [lectureStates, setLectureStates] = useState<Record<string, boolean>>(
     {},
   );
+  function formatDuration(seconds) {
+    if (!seconds) return "0m";
 
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      if (minutes === 0 && seconds > 0) {
+        return "1m"; // anything less than a minute rounds up
+      }
+      return `${minutes}m`;
+    }
+  }
   // Initialize lectureStates from course data and sync with lectureCompletion
   useEffect(() => {
     const initialStates: Record<string, boolean> = {};
@@ -199,7 +213,7 @@ const CourseSidebar = ({
                                     {lecture.title}
                                   </div>
                                   <div className="text-xs text-muted-foreground mt-1">
-                                    {lecture.duration}
+                                    {formatDuration(lecture.duration)}
                                   </div>
                                 </div>
                               </div>

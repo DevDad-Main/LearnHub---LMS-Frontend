@@ -38,11 +38,13 @@ const CourseDetails = () => {
 
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const secondsToShow = Math.floor((seconds % 3600) / 60 / 60);
 
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else {
+      if (minutes === 0 && seconds > 0) {
+        return "1m"; // anything less than a minute rounds up
+      }
       return `${minutes}m`;
     }
   }
@@ -402,7 +404,7 @@ const CourseDetails = () => {
                         ${course?.price}
                       </span>
                       <span className="text-lg text-muted-foreground line-through ml-2">
-                        ${course?.originalPrice}
+                        ${272}
                       </span>
                     </div>
                     <Badge variant="destructive">67% off</Badge>
@@ -444,9 +446,15 @@ const CourseDetails = () => {
                     <div className="flex items-center justify-between">
                       <span className="flex items-center">
                         <Globe className="h-4 w-4 mr-2" />
-                        Language
+                        {course?.languages?.length === 1
+                          ? "Language"
+                          : "Languages"}
                       </span>
-                      <span>{course?.language || "English"}</span>
+                      <div className="flex flex-wrap gap-2">
+                        {course?.languages?.map((lang, index) => (
+                          <span key={index}>{`${lang}`}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 

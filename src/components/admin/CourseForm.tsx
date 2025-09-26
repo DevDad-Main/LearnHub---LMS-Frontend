@@ -52,8 +52,8 @@ import {
   AlertDialogDescription,
   AlertDialogHeader,
   AlertDialogFooter,
-  AlertDialogTitle,
   AlertDialogTrigger,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAppContext } from "../../context/AppContext";
 
@@ -85,10 +85,20 @@ const courseDetailsSchema = z.object({
     .min(0, { message: "Price must be a positive number" }),
   requirements: z
     .array(z.string().min(1, { message: "Requirement cannot be empty" }))
-    .min(1, { message: "At least one requirement is needed" }),
+    .min(1, { message: "At least one requirement is needed" })
+    .max(6, { message: "Maximum of 6 requirements allowed" }),
   learnableSkills: z
     .array(z.string().min(1, { message: "Skill cannot be empty" }))
-    .min(1, { message: "At least one learnable skill is needed" }),
+    .min(1, { message: "At least one learnable skill is needed" })
+    .max(6, { message: "Maximum of 6 Learnable Skills allowed" }),
+  tags: z
+    .array(z.string().min(1, { message: "Tag cannot be empty" }))
+    .max(5, { message: "Maximum 5 tags allowed" })
+    .optional(),
+  languages: z
+    .array(z.string().min(1, { message: "Language cannot be empty" }))
+    .max(5, { message: "Maximum 5 languages allowed" })
+    .optional(),
   thumbnail: z.any().optional(),
 });
 
@@ -125,6 +135,8 @@ const CourseForm = () => {
   const [updateThumbnail, setUpdateThumbnail] = useState(false);
   const [updateRequirements, setUpdateRequirements] = useState(false);
   const [updateLearnableSkills, setUpdateLearnableSkills] = useState(false);
+  const [updateTags, setUpdateTags] = useState(false);
+  const [updateLanguages, setUpdateLanguages] = useState(false);
   const [courseData, setCourseData] = useState<any>(null);
 
   const [sections, setSections] = useState<any[]>([]);
@@ -202,6 +214,8 @@ const CourseForm = () => {
       price: courseData?.price || 0,
       requirements: courseData?.requirements || [],
       learnableSkills: courseData?.learnableSkills || [],
+      tags: courseData?.tags || [],
+      languages: courseData?.languages || [],
       thumbnail: null,
     },
     mode: "onChange",
@@ -225,6 +239,24 @@ const CourseForm = () => {
     name: "learnableSkills",
   });
 
+  const {
+    fields: tagFields,
+    append: appendTag,
+    remove: removeTag,
+  } = useFieldArray({
+    control: courseForm.control,
+    name: "tags",
+  });
+
+  const {
+    fields: languageFields,
+    append: appendLanguage,
+    remove: removeLanguage,
+  } = useFieldArray({
+    control: courseForm.control,
+    name: "languages",
+  });
+
   useEffect(() => {
     if (courseData) {
       courseForm.reset({
@@ -236,11 +268,15 @@ const CourseForm = () => {
         price: courseData.price,
         requirements: courseData.requirements || [],
         learnableSkills: courseData.learnableSkills || [],
+        tags: courseData.tags || [],
+        languages: courseData.languages || [],
         thumbnail: null,
       });
       setUpdateThumbnail(false);
       setUpdateRequirements(false);
       setUpdateLearnableSkills(false);
+      setUpdateTags(false);
+      setUpdateLanguages(false);
     }
   }, [courseData, courseForm]);
 
@@ -251,6 +287,12 @@ const CourseForm = () => {
       }
       if (name?.startsWith("learnableSkills")) {
         setUpdateLearnableSkills(true);
+      }
+      if (name?.startsWith("tags")) {
+        setUpdateTags(true);
+      }
+      if (name?.startsWith("languages")) {
+        setUpdateLanguages(true);
       }
     });
     return () => subscription.unsubscribe();
@@ -293,6 +335,8 @@ const CourseForm = () => {
         "updateLearnableSkills",
         updateLearnableSkills.toString(),
       );
+      formData.append("updateTags", updateTags.toString());
+      formData.append("updateLanguages", updateLanguages.toString());
       if (isEditing) {
         formData.append("currentThumbnail", courseData?.thumbnail || "");
       }
@@ -308,6 +352,12 @@ const CourseForm = () => {
           JSON.stringify(data.learnableSkills),
         );
       }
+      if (updateTags) {
+        formData.append("tags", JSON.stringify(data.tags || []));
+      }
+      if (updateLanguages) {
+        formData.append("languages", JSON.stringify(data.languages || []));
+      }
 
       const endpoint = isEditing
         ? `/api/v1/course/c/${savedCourseId}`
@@ -321,6 +371,8 @@ const CourseForm = () => {
       setUpdateThumbnail(false);
       setUpdateRequirements(false);
       setUpdateLearnableSkills(false);
+      setUpdateTags(false);
+      setUpdateLanguages(false);
 
       if (!savedCourseId) {
         setSavedCourseId(response.data.courseId);
@@ -452,10 +504,10 @@ const CourseForm = () => {
       formData.append("content", data.content || "");
       formData.append("updateVideo", updateVideo.toString());
       if (editingLectureId) {
-        formData.append("currentVideo", data.videoUrl || ""); // Send current video URL if editing
+        formData.append("currentVideo", data.videoUrl || "");
       }
       if (data.type === "Video" && data.videoFile && updateVideo) {
-        formData.append("videoFile", data.videoFile); // Ensure this matches backend
+        formData.append("videoFile", data.videoFile);
       }
       let response;
       if (editingLectureId) {
@@ -857,6 +909,124 @@ const CourseForm = () => {
                       {courseForm.formState.errors.learnableSkills?.message}
                     </FormMessage>
                   </FormItem>
+                  <FormItem>
+                    <FormLabel>Tags</FormLabel>
+                    <div className="space-y-2">
+                      {tagFields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <FormControl>
+                            <Input
+                              placeholder="Enter tag"
+                              {...courseForm.register(`tags.${index}`)}
+                              disabled={
+                                courseDetailsSaved && !isEditingCourseDetails
+                              }
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => {
+                              removeTag(index);
+                              setUpdateTags(true);
+                            }}
+                            disabled={
+                              courseDetailsSaved && !isEditingCourseDetails
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (tagFields.length < 5) {
+                          appendTag("");
+                          setUpdateTags(true);
+                        }
+                      }}
+                      className="mt-2"
+                      disabled={
+                        (courseDetailsSaved && !isEditingCourseDetails) ||
+                        tagFields.length >= 5
+                      }
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Tag
+                    </Button>
+                    <FormDescription>
+                      Add up to 5 tags to categorize your course
+                    </FormDescription>
+                    <FormMessage>
+                      {courseForm.formState.errors.tags?.message}
+                    </FormMessage>
+                  </FormItem>
+                  <FormItem>
+                    <FormLabel>Languages</FormLabel>
+                    <div className="space-y-2">
+                      {languageFields.map((field, index) => (
+                        <div
+                          key={field.id}
+                          className="flex items-center space-x-2"
+                        >
+                          <FormControl>
+                            <Input
+                              placeholder="Enter language"
+                              {...courseForm.register(`languages.${index}`)}
+                              disabled={
+                                courseDetailsSaved && !isEditingCourseDetails
+                              }
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => {
+                              removeLanguage(index);
+                              setUpdateLanguages(true);
+                            }}
+                            disabled={
+                              courseDetailsSaved && !isEditingCourseDetails
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (languageFields.length < 5) {
+                          appendLanguage("");
+                          setUpdateLanguages(true);
+                        }
+                      }}
+                      className="mt-2"
+                      disabled={
+                        (courseDetailsSaved && !isEditingCourseDetails) ||
+                        languageFields.length >= 5
+                      }
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Language
+                    </Button>
+                    <FormDescription>
+                      Add up to 5 languages available in the course
+                    </FormDescription>
+                    <FormMessage>
+                      {courseForm.formState.errors.languages?.message}
+                    </FormMessage>
+                  </FormItem>
                 </div>
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1011,6 +1181,8 @@ const CourseForm = () => {
                         setUpdateThumbnail(false);
                         setUpdateRequirements(false);
                         setUpdateLearnableSkills(false);
+                        setUpdateTags(false);
+                        setUpdateLanguages(false);
                         setThumbnailPreview(courseData?.thumbnail || null);
                         courseForm.reset({
                           title: courseData?.title || "",
@@ -1021,6 +1193,8 @@ const CourseForm = () => {
                           price: courseData?.price || 0,
                           requirements: courseData?.requirements || [],
                           learnableSkills: courseData?.learnableSkills || [],
+                          tags: courseData?.tags || [],
+                          languages: courseData?.languages || [],
                           thumbnail: null,
                         });
                       }}
@@ -1219,7 +1393,6 @@ const CourseForm = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               <Video className="h-5 w-5 text-green-500" />
-
                               <div>
                                 <h4 className="font-medium">
                                   {lecIndex + 1}. {lecture.title}

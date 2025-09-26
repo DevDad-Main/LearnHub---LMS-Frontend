@@ -316,7 +316,7 @@ function CourseVideoPlayerPage() {
         {/* Sidebar */}
         <div
           className={`
-            ${sidebarOpen ? "w-96" : "w-0"}
+            ${sidebarOpen ? "w-94" : "w-0"}
             transition-all duration-300 overflow-hidden border-r flex-shrink-0
           `}
         >
