@@ -50,31 +50,49 @@ const InstructorLogin = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
+    console.log("Form Data:", data); // Debug form data
+    console.log("Axios instance:", axios); // Debug axios instance
     setIsLoading(true);
     try {
       const response = await axios.post("/api/v1/instructor/login", data);
-
       if (response.data.success) {
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
+        setInstructor(response.data.instructor); // Assuming backend returns instructor data
         navigate("/instructor/dashboard");
+      } else {
+        console.log("Login failed:", response.data.message);
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: response.data.message || "Invalid credentials",
+        });
       }
     } catch (error: any) {
+      console.error("Error during login:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An unexpected error occurred";
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error.response?.data?.message || "Invalid credentials",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
+      form.reset({ email: "", password: "" }); // Reset form
     }
   };
 
   const responseMessage = async (response) => {
     try {
-      // response.credential is a JWT from Google
+      if (!response?.credential) {
+        throw new Error("No credential received from Google");
+      }
+
       const { data } = await axios.post("/api/v1/instructor/google-login", {
         credential: response.credential,
       });
@@ -82,28 +100,36 @@ const InstructorLogin = () => {
       if (data.success) {
         toast({
           title: "Login Successful!",
-          description: "Instuctor Successfully Logged In",
+          description: "Instructor Successfully Logged In",
         });
-        console.log(data);
+        console.log("Google Login Data:", data);
         setInstructor(data.instructor);
-        // setShowUserLogin(false);
         navigate("/instructor/dashboard");
       } else {
-        console.log(data.message);
+        console.log("Google Login failed:", data.message);
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: data.message || "Google login failed",
+        });
       }
     } catch (err) {
-      console.error(err);
-
+      console.error("Google Login Error:", err);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load profile data",
+        description: "Failed to log in with Google. Please try again.",
       });
     }
   };
 
   const errorMessage = (error) => {
-    console.log(error);
+    console.error("Google Login Error:", error);
+    toast({
+      variant: "destructive",
+      title: "Google Login Failed",
+      description: "An error occurred during Google login. Please try again.",
+    });
   };
 
   return (
@@ -141,11 +167,12 @@ const InstructorLogin = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel htmlFor="email">Email Address</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="instructor@example.com"
+                          id="email"
                           {...field}
                           className="h-11"
                         />
@@ -160,12 +187,13 @@ const InstructorLogin = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel htmlFor="password">Password</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="Enter your password"
+                            id="password"
                             {...field}
                             className="h-11 pr-10"
                           />
@@ -213,7 +241,13 @@ const InstructorLogin = () => {
                   )}
                 </Button>
 
-                <GoogleLogin onSuccess={responseMessage} />
+                <div className="mt-4">
+                  <GoogleLogin
+                    onSuccess={responseMessage}
+                    onError={errorMessage}
+                    scope="email profile"
+                  />
+                </div>
               </form>
             </Form>
 

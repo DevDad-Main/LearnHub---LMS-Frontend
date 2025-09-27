@@ -7,24 +7,44 @@ import { Eye, EyeOff, Loader2, GraduationCap, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { useAppContext } from "../../../context/AppContext";
 
-const registerSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  confirmPassword: z.string(),
-  profession: z.string().min(2, { message: "Please enter your profession" }),
-  bio: z.string().min(50, { message: "Bio must be at least 50 characters" }),
-  expertise: z.string().min(10, { message: "Please list your areas of expertise" }),
-  avatar: z.any().optional(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z
+      .string()
+      .min(6, { message: "Password must be at least 6 characters" }),
+    confirmPassword: z.string(),
+    profession: z.string().min(2, { message: "Please enter your profession" }),
+    bio: z.string().min(50, { message: "Bio must be at least 50 characters" }),
+    expertise: z
+      .string()
+      .min(10, { message: "Please list your areas of expertise" }),
+    avatar: z.any().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -62,7 +82,7 @@ const InstructorRegister = () => {
         });
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result as string);
@@ -86,25 +106,35 @@ const InstructorRegister = () => {
       formData.append("password", data.password);
       formData.append("profession", data.profession);
       formData.append("bio", data.bio);
-      
+
       // Convert expertise string to array
-      const expertiseArray = data.expertise.split(",").map(item => item.trim()).filter(item => item);
+      const expertiseArray = data.expertise
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item);
       formData.append("expertise", JSON.stringify(expertiseArray));
-      
+
       if (data.avatar) {
         formData.append("avatar", data.avatar);
       }
 
-      const response = await axios.post("/api/v1/instructor/register", formData);
-      
+      const response = await axios.post(
+        "/api/v1/instructor/register",
+        formData,
+      );
+
       if (response.data.success) {
         toast({
           title: "Application submitted!",
-          description: "Your instructor application has been submitted for review.",
+          description:
+            "Your instructor application has been submitted for review.",
         });
         navigate("/instructor/login");
+      } else {
+        console.log(response.data.message);
       }
     } catch (error: any) {
+      console.log(error);
       toast({
         variant: "destructive",
         title: "Registration failed",
@@ -124,24 +154,35 @@ const InstructorRegister = () => {
               <GraduationCap className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Become an Instructor</h1>
-          <p className="text-gray-600 mt-2">Join our community of expert educators</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Become an Instructor
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Join our community of expert educators
+          </p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">Instructor Application</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">
+              Instructor Application
+            </CardTitle>
             <CardDescription className="text-center">
               Fill out the form below to apply as an instructor
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 {/* Personal Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Personal Information
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -259,8 +300,10 @@ const InstructorRegister = () => {
 
                 {/* Professional Information */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Professional Information</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Professional Information
+                  </h3>
+
                   <FormField
                     control={form.control}
                     name="expertise"
@@ -296,7 +339,8 @@ const InstructorRegister = () => {
                           />
                         </FormControl>
                         <FormDescription>
-                          Describe your professional background and teaching experience (minimum 50 characters)
+                          Describe your professional background and teaching
+                          experience (minimum 50 characters)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -306,8 +350,10 @@ const InstructorRegister = () => {
 
                 {/* Account Security */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Account Security</h3>
-                  
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Account Security
+                  </h3>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
@@ -362,7 +408,9 @@ const InstructorRegister = () => {
                                 variant="ghost"
                                 size="sm"
                                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                onClick={() =>
+                                  setShowConfirmPassword(!showConfirmPassword)
+                                }
                               >
                                 {showConfirmPassword ? (
                                   <EyeOff className="h-4 w-4 text-gray-400" />

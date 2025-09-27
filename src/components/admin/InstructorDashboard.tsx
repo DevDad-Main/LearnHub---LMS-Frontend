@@ -119,13 +119,14 @@ const InstructorDashboard = () => {
 
         <div className="mt-auto pt-4 border-t">
           <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-              <User size={20} />
+            <div className="w-10 h-10 rounded-full  flex items-center justify-center text-primary-foreground">
+              {/* <User size={20} /> */}
+              <img src={instructor?.avatar} />
             </div>
             <div className="ml-3">
               <p className="font-medium">{instructor?.name}</p>
               <p className="text-xs text-muted-foreground">
-                instructor@example.com
+                {instructor?.email}
               </p>
             </div>
           </div>
