@@ -147,7 +147,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
               All Courses ({courses.length})
             </TabsTrigger>
             <TabsTrigger value="published">
-              Published ({courses.filter((c) => c._id.includes("pub")).length})
+              Published ({courses.filter((c) => c.isPublished).length})
             </TabsTrigger>
             <TabsTrigger value="draft">
               Draft ({courses.filter((c) => c._id.includes("draft")).length})
@@ -188,7 +188,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
           </TabsContent>
 
           <TabsContent value="published" className="mt-0">
-            {filteredCourses.filter((c) => c._id.includes("pub")).length > 0 ? (
+            {filteredCourses.filter((c) => c.isPublished).length > 0 ? (
               <div
                 className={
                   viewMode === "grid"
@@ -197,7 +197,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                 }
               >
                 {filteredCourses
-                  .filter((c) => c._id.includes("pub"))
+                  .filter((c) => c.isPublished)
                   .map((course) => (
                     <CourseCard
                       key={course._id}

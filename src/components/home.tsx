@@ -257,6 +257,7 @@ const Home = () => {
     coursesProgress,
     fetchEnrolledCourses,
     studentCourses,
+    featuredCourses,
     fetchStudentCourses,
   } = useAppContext();
   //

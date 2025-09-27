@@ -76,6 +76,7 @@ function App() {
         }
         if (instructorResponse.data.success) {
           setInstructor(instructorResponse.data.instructor);
+          console.log("Instrctor Response: ", instructorResponse.data);
         }
       } catch (error) {
         console.error("Auth error:", error.response || error);
@@ -139,57 +140,50 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/course/add-course"
-              element={
-                <ProtectedInstructorRoute instructor={instructor}>
-                  <CourseForm />
-                </ProtectedInstructorRoute>
-              }
-            />
+            {/* <Route path="/course/add-course" element={<CourseForm />} /> */}
           </Route>
+
           <Route
             path="/instructor/dashboard"
             element={
-              <ProtectedInstructorRoute instructor={instructor}>
+              instructor ? (
                 <InstructorDashboard />
-              </ProtectedInstructorRoute>
+              ) : (
+                navigate("/instructor/login")
+              )
             }
           />
           <Route
             path="/instructor/courses"
             element={
-              <ProtectedInstructorRoute instructor={instructor}>
+              instructor ? (
                 <InstructorDashboard />
-              </ProtectedInstructorRoute>
+              ) : (
+                navigate("/instructor/login")
+              )
             }
           />
           <Route
             path="/instructor/course/create"
             element={
-              <ProtectedInstructorRoute instructor={instructor}>
-                <CourseForm />
-              </ProtectedInstructorRoute>
+              instructor ? <CourseForm /> : navigate("/instructor/login")
             }
           />
           <Route
             path="/instructor/course/:courseId"
             element={
-              <ProtectedInstructorRoute instructor={instructor}>
-                <CourseForm />
-              </ProtectedInstructorRoute>
+              instructor ? <CourseForm /> : navigate("/instructor/login")
             }
           />
-          <Route path="/instructor/login" element={<InstructorLogin />} />
-          <Route path="/instructor/register" element={<InstructorRegister />} />
           <Route
             path="/instructor/profile"
             element={
-              <ProtectedInstructorRoute instructor={instructor}>
-                <InstructorProfile />
-              </ProtectedInstructorRoute>
+              instructor ? <InstructorProfile /> : navigate("/instructor/login")
             }
           />
+
+          <Route path="/instructor/login" element={<InstructorLogin />} />
+          <Route path="/instructor/register" element={<InstructorRegister />} />
         </Routes>
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </Suspense>

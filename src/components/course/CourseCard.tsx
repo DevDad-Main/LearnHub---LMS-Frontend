@@ -33,6 +33,7 @@ interface Course {
   category?: string;
   duration?: string;
   studentCount?: number;
+  enrolledStudents: number;
 }
 
 interface CourseCardProps {
@@ -40,6 +41,22 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course }: CourseCardProps) => {
+  function formatDuration(seconds) {
+    if (!seconds) return "0m";
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    } else {
+      if (minutes === 0 && seconds > 0) {
+        return "1m"; // anything less than a minute rounds up
+      }
+      return `${minutes}m`;
+    }
+  }
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-background">
       <div className="relative h-48 w-full">
@@ -67,16 +84,17 @@ const CourseCard = ({ course }: CourseCardProps) => {
           <div className="flex items-center mr-4">
             <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
             <span className="font-medium text-sm mr-1">
-              {course.rating.toFixed(1)}
+              {course?.rating?.toFixed(1)}
             </span>
             <span className="text-xs text-muted-foreground">
-              ({course.reviewCount.toLocaleString()})
+              {/* ({course?.reviewCount?.toLocaleString()}) */}(
+              {Math.floor(Math.random() * 2000)})
             </span>
           </div>
-          {course.studentCount && (
+          {course.enrolledStudents && (
             <div className="flex items-center text-xs text-muted-foreground">
               <Users className="h-3 w-3 mr-1" />
-              {course.studentCount.toLocaleString()}
+              {course?.enrolledStudents.length}
             </div>
           )}
         </div>
@@ -84,7 +102,7 @@ const CourseCard = ({ course }: CourseCardProps) => {
         {course.duration && (
           <div className="flex items-center mb-3 text-xs text-muted-foreground">
             <Clock className="h-3 w-3 mr-1" />
-            {course.duration}
+            {formatDuration(course?.duration)}
           </div>
         )}
 

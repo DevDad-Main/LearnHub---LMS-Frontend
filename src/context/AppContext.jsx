@@ -16,6 +16,7 @@ export const AppContextProvider = ({ children }) => {
   const [courses, setCourses] = useState([]);
   const [studentCourses, setStudentCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
+  const [featuredCourses, setFeaturedCourses] = useState([]);
 
   //#region Register Account With Google
   const responseMessage = async (response) => {
@@ -139,7 +140,6 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get("/api/v1/instructor/courses");
 
       if (data.success) {
-        console.log(data.courses);
         setCourses(data.courses);
       } else {
         console.log(data.message);
@@ -159,7 +159,7 @@ export const AppContextProvider = ({ children }) => {
         setStudentCourses(data.enrolledCourses);
         setCoursesProgress(data.coursesProgress);
         // console.log("Student Courses: ", data.enrolledCourses);
-        console.log("Courses Progress: ", data.coursesProgress);
+        // console.log("Courses Progress: ", data.coursesProgress);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -174,7 +174,6 @@ export const AppContextProvider = ({ children }) => {
     const { data } = await axios.get(`/api/v1/course/c/${id}`);
     if (data.success) {
       setCourseById(data.course);
-      console.log(data.course);
     } else {
       console.log(data.message);
     }
@@ -182,11 +181,27 @@ export const AppContextProvider = ({ children }) => {
 
   //#endregion
 
+  //#region Fetch Featured Courses
+  const fetchFeaturedCourses = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/course/courses");
+
+      if (data.success) {
+        console.log(data);
+        setFeaturedCourses(data.courses);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  //#endregion
+
   useEffect(() => {
     fetchUser();
     fetchInstructor();
     // fetchCourses();
     fetchInstructorsCourses();
+    fetchFeaturedCourses();
   }, []);
 
   const value = {
@@ -204,6 +219,7 @@ export const AppContextProvider = ({ children }) => {
     // fetchCourses,
     fetchInstructorsCourses,
     fetchEnrolledCourses,
+    featuredCourses,
     studentCourses,
     coursesProgress,
     fetchCourseById,
