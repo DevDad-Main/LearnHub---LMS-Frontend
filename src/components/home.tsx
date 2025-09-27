@@ -422,6 +422,25 @@ const Home = () => {
           </section>
         ) : null}
 
+        {/* Featured Courses */}
+        <section className="py-16">
+          <div className="container">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold mb-2">Featured Courses</h2>
+              <Link to="/courses">
+                <Button variant="ghost" className="text-primary">
+                  View all <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredCourses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Trending Courses */}
         <section className="py-8">
           <div className="container">
@@ -483,18 +502,6 @@ const Home = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Courses */}
-        <section className="py-16 bg-muted/20">
-          <div className="container">
-            <h2 className="text-3xl font-bold mb-8">Featured Courses</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredCourses.map((course) => (
-                <CourseCard key={course.id} course={course} />
               ))}
             </div>
             <div className="mt-10 text-center">
