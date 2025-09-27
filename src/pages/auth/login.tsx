@@ -217,6 +217,18 @@ const Login = () => {
               </Link>
             </p>
           </CardFooter>
+
+          <CardFooter className="text-center">
+            <p className="text-sm text-muted-foreground">
+              Are you an Instructor?{" "}
+              <Link
+                to="/instructor/login"
+                className="text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </CardFooter>
         </Card>
       </div>
     </div>

@@ -108,7 +108,7 @@ function CourseVideoPlayerPage() {
     const fetchCourse = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`/api/v1/course/c/${id}`);
+        const { data } = await axios.get(`/api/v1/course/learn/c/${id}`);
         const courseData = data.course;
         const completedLectures: string[] = data.completedLectures || []; // <- ensure backend sends this
 
