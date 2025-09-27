@@ -333,35 +333,97 @@ const CourseDetails = () => {
                     <CardTitle>Your Instructor</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-start space-x-4 mb-6">
-                      <Avatar className="h-20 w-20">
+                    {/* Profile Section */}
+                    <div className="flex items-start space-x-6 mb-8">
+                      <Avatar className="h-24 w-24 ring-2 ring-primary/20">
                         <AvatarImage src={course?.instructor?.avatar} />
-                        <AvatarFallback>JS</AvatarFallback>
+                        <AvatarFallback>
+                          {course?.instructor?.name
+                            ?.split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="text-xl font-semibold mb-1">
+                        <h3 className="text-2xl font-bold mb-1">
                           {course?.instructor?.name}
                         </h3>
                         <p className="text-muted-foreground mb-3">
-                          {course?.instructor?.title}
+                          {course?.instructor?.title ||
+                            course?.instructor?.profession}
                         </p>
-                        <div className="flex flex-wrap gap-4 text-sm">
+                        <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
                           <div className="flex items-center">
                             <Star className="h-4 w-4 text-yellow-500 mr-1" />
-                            {course?.instructor?.rating} Instructor Rating
+                            {course?.instructor?.rating || "N/A"} Rating
                           </div>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            {course?.instructor?.students?.toLocaleString()}{" "}
+                            {course?.instructor?.students?.toLocaleString() ||
+                              0}{" "}
                             Students
                           </div>
                           <div className="flex items-center">
                             <Play className="h-4 w-4 mr-1" />
-                            {course?.instructor?.courses} Courses
+                            {course?.instructor?.courses || 0} Courses
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Bio Section */}
+                    {course?.instructor?.bio && (
+                      <div className="mb-6">
+                        <h4 className="font-semibold mb-2">About</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          {course?.instructor?.bio}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Expertise Section */}
+                    {course?.instructor?.expertise?.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="font-semibold mb-2">Expertise</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {course?.instructor?.expertise.map(
+                            (skill: string, i: number) => (
+                              <span
+                                key={i}
+                                className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                              >
+                                {skill}
+                              </span>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Created Courses Section */}
+                    {course?.instructor?.createdCourses?.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold mb-2">
+                          More Courses by {course?.instructor?.name}
+                        </h4>
+                        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                          {course?.instructor?.createdCourses.map((c: any) => (
+                            <div
+                              key={c._id}
+                              onClick={() => navigate(`/course/${c._id}`)}
+                              className="cursor-pointer border rounded-lg p-3 hover:shadow-md transition"
+                            >
+                              <h5 className="font-medium line-clamp-2">
+                                {c.title}
+                              </h5>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {c.subtitle}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>

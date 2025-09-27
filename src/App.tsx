@@ -1,5 +1,5 @@
-import { Suspense, useEffect, useState } from "react";
-import { useRoutes, Routes, Route, useLocation } from "react-router-dom";
+import { Suspense } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import Home from "./components/home";
 import Login from "./pages/auth/login";
@@ -21,78 +21,11 @@ import { Toaster } from "./components/ui/toaster.tsx";
 
 function App() {
   const location = useLocation();
-  const { axios, navigate } = useAppContext();
-  const [user, setUser] = useState(null);
-  const [instructor, setInstructor] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
-
-  // useEffect(() => {
-  //   const fetchUser = async () => {
-  //     try {
-  //       const { data } = await axios.get("/api/v1/users/user-authenticated");
-  //       if (data.success) {
-  //         setUser(data.user);
-  //       }
-  //     } catch (error) {
-  //       // toast.error(error.message);
-  //       setUser(null);
-  //     } finally {
-  //       setIsLoading(false); // Set loading to false after auth check
-  //     }
-  //   };
-  //   fetchUser();
-  // }, []);
-  //
-  // useEffect(() => {
-  //   const fetchInstructor = async () => {
-  //     try {
-  //       const { data } = await axios.get(
-  //         "/api/v1/instructor/instructor-authenticated",
-  //       );
-  //       if (data.success) {
-  //         console.log(data);
-  //         setInstructor(data.instructor);
-  //       }
-  //     } catch (error) {
-  //       // toast.error(error.message);
-  //       setInstructor(null);
-  //     } finally {
-  //       setIsLoading(false); // Set loading to false after auth check
-  //     }
-  //   };
-  //   fetchInstructor();
-  // }, []);
-
-  useEffect(() => {
-    const fetchAuth = async () => {
-      try {
-        const [userResponse, instructorResponse] = await Promise.all([
-          axios.get("/api/v1/users/user-authenticated"),
-          axios.get("/api/v1/instructor/instructor-authenticated"),
-        ]);
-
-        if (userResponse.data.success) {
-          setUser(userResponse.data.user);
-        }
-        if (instructorResponse.data.success) {
-          setInstructor(instructorResponse.data.instructor);
-          console.log("Instrctor Response: ", instructorResponse.data);
-        }
-      } catch (error) {
-        console.error("Auth error:", error.response || error);
-        setUser(null);
-        setInstructor(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAuth();
-  }, []);
+  const { user, instructor, isLoading } = useAppContext();
 
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/register";
 
-  // Show loading while checking authentication
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -119,7 +52,7 @@ function App() {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute user={user}>
+                <ProtectedRoute user={user} isLoading={isLoading}>
                   <Dashboard />
                 </ProtectedRoute>
               }
@@ -127,7 +60,7 @@ function App() {
             <Route
               path="/cart"
               element={
-                <ProtectedRoute user={user}>
+                <ProtectedRoute user={user} isLoading={isLoading}>
                   <Cart />
                 </ProtectedRoute>
               }
@@ -135,56 +68,75 @@ function App() {
             <Route
               path="/course/learn/:id"
               element={
-                <ProtectedRoute user={user}>
+                <ProtectedRoute user={user} isLoading={isLoading}>
                   <CourseVideoPlayerPage />
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="/course/add-course" element={<CourseForm />} /> */}
           </Route>
 
+          {/* Instructor routes */}
           <Route
             path="/instructor/dashboard"
             element={
-              instructor ? (
+              <ProtectedInstructorRoute
+                instructor={instructor}
+                isLoading={isLoading}
+              >
                 <InstructorDashboard />
-              ) : (
-                navigate("/instructor/login")
-              )
+              </ProtectedInstructorRoute>
             }
           />
           <Route
             path="/instructor/courses"
             element={
-              instructor ? (
+              <ProtectedInstructorRoute
+                instructor={instructor}
+                isLoading={isLoading}
+              >
                 <InstructorDashboard />
-              ) : (
-                navigate("/instructor/login")
-              )
+              </ProtectedInstructorRoute>
             }
           />
           <Route
             path="/instructor/course/create"
             element={
-              instructor ? <CourseForm /> : navigate("/instructor/login")
+              <ProtectedInstructorRoute
+                instructor={instructor}
+                isLoading={isLoading}
+              >
+                <CourseForm />
+              </ProtectedInstructorRoute>
             }
           />
           <Route
             path="/instructor/course/:courseId"
             element={
-              instructor ? <CourseForm /> : navigate("/instructor/login")
+              <ProtectedInstructorRoute
+                instructor={instructor}
+                isLoading={isLoading}
+              >
+                <CourseForm />
+              </ProtectedInstructorRoute>
             }
           />
           <Route
             path="/instructor/profile"
             element={
-              instructor ? <InstructorProfile /> : navigate("/instructor/login")
+              <ProtectedInstructorRoute
+                instructor={instructor}
+                isLoading={isLoading}
+              >
+                <InstructorProfile />
+              </ProtectedInstructorRoute>
             }
           />
 
+          {/* Instructor auth pages */}
           <Route path="/instructor/login" element={<InstructorLogin />} />
           <Route path="/instructor/register" element={<InstructorRegister />} />
         </Routes>
+
         {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </Suspense>
       <Toaster />

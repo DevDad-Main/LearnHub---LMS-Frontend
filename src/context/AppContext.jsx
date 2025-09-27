@@ -16,6 +16,7 @@ export const AppContextProvider = ({ children }) => {
   const [courses, setCourses] = useState([]);
   const [studentCourses, setStudentCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [featuredCourses, setFeaturedCourses] = useState([]);
 
   //#region Register Account With Google
@@ -197,12 +198,30 @@ export const AppContextProvider = ({ children }) => {
   //#endregion
 
   useEffect(() => {
-    fetchUser();
-    fetchInstructor();
-    // fetchCourses();
-    fetchInstructorsCourses();
-    fetchFeaturedCourses();
+    const init = async () => {
+      try {
+        await Promise.all([fetchUser(), fetchInstructor()]);
+
+        await fetchInstructorsCourses();
+        await fetchFeaturedCourses();
+      } finally {
+        setIsLoading(false); // ✅ only finish after fetches
+      }
+    };
+    init();
   }, []);
+
+  useEffect(() => {
+    console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
+  }, []);
+
+  // useEffect(() => {
+  //   fetchUser();
+  //   fetchInstructor();
+  //   // fetchCourses();
+  //   fetchInstructorsCourses();
+  //   fetchFeaturedCourses();
+  // }, []);
 
   const value = {
     navigate,
@@ -224,6 +243,7 @@ export const AppContextProvider = ({ children }) => {
     coursesProgress,
     fetchCourseById,
     courseById,
+    isLoading,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

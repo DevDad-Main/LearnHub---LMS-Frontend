@@ -14,7 +14,6 @@ import {
   Upload,
   X,
   Plus,
-  Trash2,
   Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -58,8 +57,12 @@ const InstructorProfile = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [updateAvatar, setUpdateAvatar] = useState(false);
+
   const [expertise, setExpertise] = useState<string[]>([]);
   const [newExpertise, setNewExpertise] = useState("");
+  const [originalExpertise, setOriginalExpertise] = useState<string[]>([]); // 🔧 track initial
+  const [updateExpertise, setUpdateExpertise] = useState(false); // 🔧 flag
+
   const [instructorData, setInstructorData] = useState<any>(null);
 
   const form = useForm<ProfileFormValues>({
@@ -83,6 +86,7 @@ const InstructorProfile = () => {
         setInstructorData(data);
         setAvatarPreview(data.avatar);
         setExpertise(data.expertise || []);
+        setOriginalExpertise(data.expertise || []); // 🔧 keep initial copy
 
         form.reset({
           name: data.name || "",
@@ -135,13 +139,17 @@ const InstructorProfile = () => {
 
   const addExpertise = () => {
     if (newExpertise.trim() && !expertise.includes(newExpertise.trim())) {
-      setExpertise([...expertise, newExpertise.trim()]);
+      const updated = [...expertise, newExpertise.trim()];
+      setExpertise(updated);
       setNewExpertise("");
+      setUpdateExpertise(true); // 🔧 mark as changed
     }
   };
 
   const removeExpertise = (index: number) => {
-    setExpertise(expertise.filter((_, i) => i !== index));
+    const updated = expertise.filter((_, i) => i !== index);
+    setExpertise(updated);
+    setUpdateExpertise(true); // 🔧 mark as changed
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -152,14 +160,19 @@ const InstructorProfile = () => {
       formData.append("email", data.email);
       formData.append("profession", data.profession);
       formData.append("bio", data.bio);
-      formData.append("expertise", JSON.stringify(expertise));
       formData.append("updateAvatar", updateAvatar.toString());
+      formData.append("updateExpertise", updateExpertise.toString());
 
       if (data.avatar && updateAvatar) {
         formData.append("avatar", data.avatar);
       }
 
-      const response = await axios.put("/api/v1/instructor/profile", formData);
+      if (updateExpertise) {
+        // 🔧 only update if changed
+        formData.append("expertise", JSON.stringify(expertise));
+      }
+
+      const response = await axios.post("/api/v1/instructor/profile", formData);
 
       if (response.data.success) {
         toast({
@@ -167,6 +180,8 @@ const InstructorProfile = () => {
           description: "Your profile has been successfully updated.",
         });
         setUpdateAvatar(false);
+        setUpdateExpertise(false); // 🔧 reset flag
+        setOriginalExpertise(expertise); // 🔧 refresh baseline
       }
     } catch (error: any) {
       toast({
@@ -377,6 +392,7 @@ const InstructorProfile = () => {
                                 placeholder="instructor@example.com"
                                 {...field}
                                 className="h-11"
+                                disabled
                               />
                             </FormControl>
                             <FormMessage />
