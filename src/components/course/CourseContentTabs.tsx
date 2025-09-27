@@ -21,8 +21,9 @@ interface CourseContentTabsProps {
 }
 
 const CourseContentTabs = ({
-  courseId = "1",
-  lectureId = "1",
+  course,
+  // courseId = "1",
+  // lectureId = "1",
 }: CourseContentTabsProps) => {
   const [activeTab, setActiveTab] = useState("content");
   const [newQuestion, setNewQuestion] = useState("");
@@ -137,41 +138,57 @@ const CourseContentTabs = ({
           <div className="space-y-6">
             {/* Instructor Section */}
             <div className="border-b pb-6">
-              <h3 className="text-lg font-semibold mb-4">Meet Your Instructor</h3>
+              <h3 className="text-lg font-semibold mb-4">
+                Meet Your Instructor
+              </h3>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-shrink-0">
                   <Avatar className="h-20 w-20">
                     <AvatarImage
-                      src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80"
-                      alt="John Smith"
+                      src={course?.instructor?.avatar}
+                      alt={course?.instructor?.name}
                     />
                     <AvatarFallback className="text-lg">JS</AvatarFallback>
                   </Avatar>
                 </div>
                 <div className="flex-1">
-                  <h4 className="text-xl font-semibold mb-2">John Smith</h4>
-                  <p className="text-primary font-medium mb-3">Senior React Developer & Tech Educator</p>
+                  <h4 className="text-xl font-semibold mb-2">
+                    {course?.instructor?.name}
+                  </h4>
+                  <p className="text-primary font-medium mb-3">
+                    {course?.instructor?.profession}
+                  </p>
                   <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                    John is a seasoned software engineer with over 8 years of experience building scalable web applications. 
-                    He has worked at top tech companies including Google and Meta, where he led frontend development teams 
-                    and architected complex React applications serving millions of users.
+                    {course?.instructor?.bio}
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
                     <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="font-semibold text-lg">150K+</div>
-                      <div className="text-xs text-muted-foreground">Students</div>
+                      <div className="font-semibold text-lg">
+                        {course?.totalStudents}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {course?.totalStudents === 1 ? "Student" : "Students"}
+                      </div>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-3">
                       <div className="font-semibold text-lg">4.8</div>
-                      <div className="text-xs text-muted-foreground">Rating</div>
+                      <div className="text-xs text-muted-foreground">
+                        Rating
+                      </div>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-3">
-                      <div className="font-semibold text-lg">25</div>
-                      <div className="text-xs text-muted-foreground">Courses</div>
+                      <div className="font-semibold text-lg">
+                        {course?.instructor?.createdCourses.length}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Courses
+                      </div>
                     </div>
                     <div className="bg-muted/50 rounded-lg p-3">
                       <div className="font-semibold text-lg">8</div>
-                      <div className="text-xs text-muted-foreground">Years Exp</div>
+                      <div className="text-xs text-muted-foreground">
+                        Years Exp
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -179,8 +196,11 @@ const CourseContentTabs = ({
               <div className="mt-4">
                 <h5 className="font-medium mb-2">Expertise</h5>
                 <div className="flex flex-wrap gap-2">
-                  {["React", "TypeScript", "Node.js", "GraphQL", "AWS", "Docker", "MongoDB", "Next.js"].map((skill) => (
-                    <span key={skill} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                  {course?.instructor?.expertise.map((skill) => (
+                    <span
+                      key={skill}
+                      className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                    >
                       {skill}
                     </span>
                   ))}
@@ -192,19 +212,21 @@ const CourseContentTabs = ({
             <div>
               <h3 className="text-lg font-semibold mb-4">About This Course</h3>
               <p className="text-muted-foreground mb-4">
-                Learn React, Hooks, Redux, React Router, Next.js, and best practices
-                for building modern web applications. This comprehensive course
-                covers everything you need to know to become a proficient React
-                developer in 2024.
+                {course?.description}
               </p>
               <div className="mt-6">
                 <h4 className="font-medium mb-2">What you'll learn</h4>
                 <ul className="list-disc pl-5 space-y-1">
-                  <li>Build powerful, fast, user-friendly and reactive web apps</li>
-                  <li>Apply for high-paid jobs or work as a freelancer</li>
-                  <li>Master React Hooks and React Components</li>
-                  <li>Manage complex state efficiently with Redux</li>
-                  <li>Build real-world projects for your portfolio</li>
+                  {course?.learnableSkills.map((skill, index) => (
+                    <li key={index}>{skill}</li>
+                  ))}
+                  {/* <li> */}
+                  {/*   Build powerful, fast, user-friendly and reactive web apps */}
+                  {/* </li> */}
+                  {/* <li>Apply for high-paid jobs or work as a freelancer</li> */}
+                  {/* <li>Master React Hooks and React Components</li> */}
+                  {/* <li>Manage complex state efficiently with Redux</li> */}
+                  {/* <li>Build real-world projects for your portfolio</li> */}
                 </ul>
               </div>
             </div>
