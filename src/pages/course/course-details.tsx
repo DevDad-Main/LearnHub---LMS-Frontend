@@ -29,7 +29,7 @@ import { useAppContext } from "../../context/AppContext.jsx";
 
 const CourseDetails = () => {
   const { id } = useParams();
-  const { axios } = useAppContext();
+  const { axios, navigate } = useAppContext();
   const [course, setCourse] = useState(null);
   const [totalLectures, setTotalLectures] = useState(0);
 
@@ -359,13 +359,14 @@ const CourseDetails = () => {
                           </div>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1" />
-                            {course?.instructor?.students?.toLocaleString() ||
-                              0}{" "}
+                            {course?.totalStudents?.toLocaleString() || 0}{" "}
                             Students
                           </div>
                           <div className="flex items-center">
                             <Play className="h-4 w-4 mr-1" />
-                            {course?.instructor?.courses || 0} Courses
+                            {course?.instructor?.createdCourses.length ||
+                              0}{" "}
+                            Courses
                           </div>
                         </div>
                       </div>
