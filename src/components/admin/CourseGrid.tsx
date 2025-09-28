@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Grid, List, Plus, Search } from "lucide-react";
 import CourseCard from "./CourseCard";
+import { useAppContext } from "../../context/AppContext";
 
 interface Course {
   _id: string;
@@ -23,6 +24,7 @@ interface Course {
   price: number;
   thumbnail: string;
   sections: Section[];
+  isPublished: boolean;
 }
 
 interface Section {
@@ -43,12 +45,22 @@ interface CourseGridProps {
   courses?: Course[];
 }
 
-const CourseGrid = ({ courses = [] }: CourseGridProps) => {
+const CourseGrid = ({ courses: initialCourses = [] }: CourseGridProps) => {
+  const { axios } = useAppContext();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [levelFilter, setLevelFilter] = useState<string>("all");
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
   const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   if (initialCourses.length === 0) {
+  //     fetchCourses();
+  //   } else {
+  //     setCourses(initialCourses);
+  //   }
+  // }, [initialCourses]);
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
@@ -72,6 +84,19 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
   ];
 
   const levels = ["beginner", "intermediate", "advanced"];
+
+  const handleDelete = async (courseId: string) => {
+    try {
+      await axios.delete(`/api/v1/course/c/${courseId}`);
+      console.log("Course deleted successfully:", courseId);
+      // Refresh the course list after deletion
+      // await fetchCourses();
+    } catch (error: any) {
+      console.error("Error deleting course:", error);
+      // Optionally, show an error message to the user
+      alert(error.response?.data?.message || "Failed to delete course");
+    }
+  };
 
   return (
     <div className="w-full bg-background p-6">
@@ -169,6 +194,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                     course={course}
                     viewMode={viewMode}
                     onEdit={() => navigate(`/instructor/course/${course._id}`)}
+                    onDelete={handleDelete}
                   />
                 ))}
               </div>
@@ -206,6 +232,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                       onEdit={() =>
                         navigate(`/instructor/course/${course._id}`)
                       }
+                      onDelete={handleDelete}
                     />
                   ))}
               </div>
@@ -244,6 +271,7 @@ const CourseGrid = ({ courses = [] }: CourseGridProps) => {
                       onEdit={() =>
                         navigate(`/instructor/course/${course._id}`)
                       }
+                      onDelete={handleDelete}
                     />
                   ))}
               </div>

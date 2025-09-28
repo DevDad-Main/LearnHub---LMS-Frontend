@@ -48,8 +48,10 @@ const InstructorDashboard = () => {
   // }, []);
 
   useEffect(() => {
+    if (!instructor) return;
+
     fetchInstructorsCourses();
-  }, []);
+  }, [instructor]);
 
   const handleCreateCourse = () => {
     navigate("/instructor/course/create");
