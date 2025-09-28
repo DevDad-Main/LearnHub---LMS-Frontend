@@ -577,7 +577,7 @@ const CourseForm = () => {
   const handleDeleteLecture = async (sectionId: string, lectureId: string) => {
     try {
       await axios.delete(
-        `/api/v1/course/${savedCourseId}/delete-lecture/${lectureId}`,
+        `/api/v1/course/${savedCourseId}/section/${sectionId}/delete-lecture/${lectureId}`,
       );
       setSections((prevSections) =>
         prevSections.map((section) =>
