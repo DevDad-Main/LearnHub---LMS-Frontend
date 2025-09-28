@@ -46,13 +46,23 @@ const MainLayout = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // "Web Development",
+  // "Mobile Development",
+  // "Data Science",
+  // "Machine Learning",
+  // "Business",
+  // "Marketing",
+  // "Design",
+  // "Photography",
   const categories = [
-    { name: "Development", href: "/categories/development" },
-    { name: "Business", href: "/categories/business" },
-    { name: "IT & Software", href: "/categories/it-software" },
-    { name: "Design", href: "/categories/design" },
-    { name: "Marketing", href: "/categories/marketing" },
-    { name: "Personal Development", href: "/categories/personal-development" },
+    { name: "Web Development", href: "/categories/Web-Development" },
+    { name: "Mobile Development", href: "/categories/Mobile-Development" },
+    { name: "Data Science", href: "/categories/Data-Science" },
+    { name: "Machine Learning", href: "/categories/Machine-Learning" },
+    { name: "Business", href: "/categories/Business" },
+    { name: "Marketing", href: "/categories/Marketing" },
+    { name: "Design", href: "/categories/Design" },
+    { name: "Photography", href: "/categories/Photography" },
   ];
 
   return (

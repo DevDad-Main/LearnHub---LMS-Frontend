@@ -18,6 +18,8 @@ import InstructorLogin from "./pages/instructor/auth/InstructorLogin.js";
 import InstructorRegister from "./pages/instructor/auth/InstructorRegister.js";
 import InstructorProfile from "./pages/instructor/InstructorProfile.js";
 import { Toaster } from "./components/ui/toaster.tsx";
+import AllCourses from "./pages/course/AllCourses.tsx";
+import CategoryCourses from "./pages/course/CategoryCourses.tsx";
 
 function App() {
   const location = useLocation();
@@ -49,6 +51,8 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/course/:id" element={<CourseDetails />} />
+            <Route path="/courses" element={<AllCourses />} />
+            <Route path="/categories/:category" element={<CategoryCourses />} />
             <Route
               path="/dashboard"
               element={
