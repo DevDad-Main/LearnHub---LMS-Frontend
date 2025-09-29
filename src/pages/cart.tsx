@@ -135,12 +135,18 @@ const Cart = () => {
     fetchCartItems();
   }, [user]);
 
+  useEffect(() => {}, [cartItems]);
   const removeFromCart = async (id: number) => {
     try {
-      const { data } = await axios.delete(`/cart/delete/${id}`);
+      const { data } = await axios.delete(`/api/v1/users/cart/delete/${id}`);
       if (data.success) {
+        toast({
+          title: "Course Removed",
+          description: data.response?.data?.message,
+        });
         console.log(data.message);
-        setCartItems(cartItems.filter((item) => item._id !== id));
+        // setCartItems(data.cart);
+        setCartItems(cartItems.filter((item) => item.course?._id !== id));
       } else {
         toast({
           variant: "destructive",
