@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -20,6 +21,7 @@ import {
   BookmarkIcon,
   BarChart2,
 } from "lucide-react";
+import { useAppContext } from "../context/AppContext.jsx";
 
 // Define a CourseCard component locally since we're having import issues
 const CourseCard = ({
@@ -78,72 +80,6 @@ interface Course {
 }
 
 const Dashboard = () => {
-  // Mock data for enrolled courses
-  const enrolledCourses: Course[] = [
-    {
-      id: "1",
-      title: "Complete React Developer in 2023",
-      instructor: "John Doe",
-      thumbnail:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80",
-      progress: 65,
-      totalLectures: 120,
-      completedLectures: 78,
-      category: "Web Development",
-      lastAccessed: new Date("2023-06-15"),
-    },
-    {
-      id: "2",
-      title: "Advanced JavaScript Concepts",
-      instructor: "Jane Smith",
-      thumbnail:
-        "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&q=80",
-      progress: 32,
-      totalLectures: 85,
-      completedLectures: 27,
-      category: "Programming",
-      lastAccessed: new Date("2023-06-10"),
-    },
-    {
-      id: "3",
-      title: "UI/UX Design Masterclass",
-      instructor: "Michael Johnson",
-      thumbnail:
-        "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&q=80",
-      progress: 100,
-      totalLectures: 64,
-      completedLectures: 64,
-      category: "Design",
-      lastAccessed: new Date("2023-06-05"),
-    },
-  ];
-
-  // Mock data for recommended courses
-  const recommendedCourses = [
-    {
-      id: "4",
-      title: "Node.js: The Complete Guide",
-      instructor: "Alex Brown",
-      thumbnail:
-        "https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?w=800&q=80",
-      rating: 4.8,
-      price: 89.99,
-      category: "Backend Development",
-      description: "Master Node.js and build powerful backend applications",
-    },
-    {
-      id: "5",
-      title: "Python for Data Science",
-      instructor: "Sarah Wilson",
-      thumbnail:
-        "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&q=80",
-      rating: 4.9,
-      price: 94.99,
-      category: "Data Science",
-      description: "Learn Python for data analysis and machine learning",
-    },
-  ];
-
   // Learning statistics
   const learningStats = {
     totalHours: 42,
@@ -151,6 +87,41 @@ const Dashboard = () => {
     certificatesEarned: 2,
     currentStreak: 5,
   };
+
+  const recommendedCourses = [];
+
+  const { toast } = useToast();
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const { axios, user } = useAppContext();
+
+  useEffect(() => {
+    const fetchUserDashboard = async () => {
+      try {
+        const { data } = await axios.get("/api/v1/users/dashboard");
+
+        if (data.success) {
+          console.log(data);
+          // setEnrolledCourses(data.user.enrolledCourses);
+          setEnrolledCourses([]);
+        } else {
+          console.error(data.message);
+          toast({
+            variant: "destructive",
+            title: "Dashboard Failed",
+            description: data.response?.data?.message || data.message,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        toast({
+          variant: "destructive",
+          title: "Dashboard Failed",
+          description: error.response?.data?.message || error.message,
+        });
+      }
+    };
+    fetchUserDashboard();
+  }, [user, axios]);
 
   return (
     <div className="container mx-auto px-4 py-8 bg-background">
@@ -241,63 +212,59 @@ const Dashboard = () => {
 
         <TabsContent value="in-progress">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolledCourses
-              .filter((course) => course.progress < 100)
-              .map((course) => (
-                <Card key={course.id} className="overflow-hidden">
-                  <div className="relative h-48 w-full">
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                    <Badge className="absolute top-2 right-2">
-                      {course.category}
-                    </Badge>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="line-clamp-2">
-                      {course.title}
-                    </CardTitle>
-                    <CardDescription>
-                      Instructor: {course.instructor}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-2">
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>{course.progress}% complete</span>
-                        <span>
-                          {course.completedLectures}/{course.totalLectures}{" "}
-                          lectures
-                        </span>
-                      </div>
-                      <Progress value={course.progress} className="h-2" />
+            {enrolledCourses.slice(0, 3).map((course) => (
+              <Card key={course.id} className="overflow-hidden">
+                <div className="relative h-48 w-full">
+                  <img
+                    src={course.thumbnail}
+                    alt={course.title}
+                    className="h-full w-full object-cover"
+                  />
+                  <Badge className="absolute top-2 right-2">
+                    {course.category}
+                  </Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle className="line-clamp-2">{course.title}</CardTitle>
+                  <CardDescription>
+                    Instructor: {course.instructor}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-2">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{course.progress}% complete</span>
+                      <span>
+                        {course.completedLectures}/{course.totalLectures}{" "}
+                        lectures
+                      </span>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Last accessed: {course.lastAccessed?.toLocaleDateString()}
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button asChild className="w-full">
-                      <Link to={`/course/${course.id}`}>Continue Learning</Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                    <Progress value={course.progress} className="h-2" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Last accessed: {course.lastAccessed?.toLocaleDateString()}
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full">
+                    <Link to={`/course/${course.id}`}>Continue Learning</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
           </div>
         </TabsContent>
 
         <TabsContent value="completed">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {enrolledCourses
-              .filter((course) => course.progress === 100)
+              .filter((course) => course.isCompleted)
               .map((course) => (
-                <Card key={course.id} className="overflow-hidden">
+                <Card key={course._id} className="overflow-hidden">
                   <div className="relative h-48 w-full">
                     <img
-                      src={course.thumbnail}
-                      alt={course.title}
+                      src={course?.course?.thumbnail}
+                      alt={course?.course?.title}
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -380,9 +347,12 @@ const Dashboard = () => {
               {enrolledCourses.slice(0, 3).map((course, index) => (
                 <div key={index} className="flex items-center gap-4 p-4">
                   <Avatar>
-                    <AvatarImage src={course.thumbnail} alt={course.title} />
+                    <AvatarImage
+                      src={course.course?.thumbnail}
+                      alt={course.title}
+                    />
                     <AvatarFallback>
-                      {course.title.substring(0, 2)}
+                      {course.course?.title.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">

@@ -108,6 +108,40 @@ const Cart = () => {
     }
   }
 
+  const placeOrder = async () => {
+    try {
+      console.log("Clicked");
+
+      const { data } = await axios.post(
+        "/api/v1/purchase/checkout/create-checkout-session",
+        {
+          courses: cartItems.map((item) => ({
+            product: item.course._id,
+            quantity: item.quantity,
+          })),
+          total: total, // use your computed total
+        },
+      );
+
+      if (data.success) {
+        window.location.replace(data.url);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.message || "Checkout failed",
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Checkout failed",
+        description: error.response?.data?.message || error.message,
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
@@ -413,7 +447,7 @@ const Cart = () => {
                   <span>${total.toFixed(2)}</span>
                 </div>
 
-                <Button className="w-full" size="lg">
+                <Button onClick={placeOrder} className="w-full" size="lg">
                   <CreditCard className="h-4 w-4 mr-2" />
                   Proceed to Checkout
                 </Button>

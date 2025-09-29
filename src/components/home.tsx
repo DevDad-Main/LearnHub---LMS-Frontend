@@ -335,7 +335,7 @@ const Home = () => {
         </section>
 
         {/* Continue Learning Section */}
-        {user ? (
+        {user && studentCourses.length > 0 ? (
           <section className="py-8 bg-muted/20">
             <div className="container">
               <div className="flex items-center justify-between mb-8">

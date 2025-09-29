@@ -20,6 +20,7 @@ import InstructorProfile from "./pages/instructor/InstructorProfile.js";
 import { Toaster } from "./components/ui/toaster.tsx";
 import AllCourses from "./pages/course/AllCourses.tsx";
 import CategoryCourses from "./pages/course/CategoryCourses.tsx";
+import Loading from "./components/Loading.jsx";
 
 function App() {
   const location = useLocation();
@@ -50,6 +51,7 @@ function App() {
           {/* Everything else inside MainLayout */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/loading" element={<Loading />} />
             <Route path="/course/:id" element={<CourseDetails />} />
             <Route path="/courses" element={<AllCourses />} />
             <Route path="/categories/:category" element={<CategoryCourses />} />
