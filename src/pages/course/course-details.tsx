@@ -264,8 +264,9 @@ const CourseDetails = () => {
                   <CardHeader>
                     <CardTitle>Course Curriculum</CardTitle>
                     <CardDescription>
-                      {course?.curriculum?.reduce(
-                        (acc, section) => acc + section.lectures,
+                      {course?.sections.length} sections •{" "}
+                      {course?.sections?.reduce(
+                        (acc, section) => acc + section.lectures.length,
                         0,
                       )}{" "}
                       lectures • {formatDuration(course?.duration)} total length
@@ -281,7 +282,25 @@ const CourseDetails = () => {
                             </h4>
                             <span className="text-sm text-muted-foreground">
                               {section.lectures.length} lectures •{" "}
-                              {formatDuration(section.duration)}
+                              {(() => {
+                                const totalDuration = section?.lectures?.reduce(
+                                  (acc, lecture) => {
+                                    return (
+                                      acc + (Number(lecture.duration) || 0)
+                                    );
+                                  },
+                                  0,
+                                );
+
+                                const hours = Math.floor(totalDuration / 3600);
+                                const minutes = Math.floor(
+                                  (totalDuration % 3600) / 60,
+                                );
+
+                                return hours > 0
+                                  ? `${hours}h ${minutes}m`
+                                  : `${minutes}m`;
+                              })()}
                             </span>
                           </div>
                           <div className="space-y-3">

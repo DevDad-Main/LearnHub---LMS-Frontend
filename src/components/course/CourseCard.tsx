@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Clock, Users } from "lucide-react";
+import axios from "axios";
+import { toast, useToast } from "../ui/use-toast";
 
 interface Instructor {
   name: string;
@@ -31,9 +33,9 @@ interface Course {
   thumbnail: string;
   description: string;
   category?: string;
-  duration?: string;
+  duration?: number; // duration in seconds
   studentCount?: number;
-  enrolledStudents: number;
+  enrolledStudents: number; // ✅ clarified as number
 }
 
 interface CourseCardProps {
@@ -41,7 +43,8 @@ interface CourseCardProps {
 }
 
 const CourseCard = ({ course }: CourseCardProps) => {
-  function formatDuration(seconds) {
+  const { toast } = useToast();
+  function formatDuration(seconds?: number) {
     if (!seconds) return "0m";
 
     const hours = Math.floor(seconds / 3600);
@@ -54,6 +57,35 @@ const CourseCard = ({ course }: CourseCardProps) => {
         return "1m"; // anything less than a minute rounds up
       }
       return `${minutes}m`;
+    }
+  }
+
+  async function handleAddToCart() {
+    try {
+      const { data } = await axios.post("/api/v1/users/cart/add", {
+        courseId: course.id,
+      });
+
+      if (data.success) {
+        toast({
+          title: "Course Added To Cart",
+          description: `You have added ${course.title} to your cart!`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.response?.data?.message || "Failed to load course",
+        });
+      }
+      // you could fire a toast/notification here
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to load course",
+      });
     }
   }
 
@@ -87,14 +119,13 @@ const CourseCard = ({ course }: CourseCardProps) => {
               {course?.rating?.toFixed(1)}
             </span>
             <span className="text-xs text-muted-foreground">
-              {/* ({course?.reviewCount?.toLocaleString()}) */}(
-              {Math.floor(Math.random() * 2000)})
+              ({course.reviewCount?.toLocaleString() ?? 0})
             </span>
           </div>
-          {course.enrolledStudents && (
+          {course.enrolledStudents > 0 && (
             <div className="flex items-center text-xs text-muted-foreground">
               <Users className="h-3 w-3 mr-1" />
-              {course?.enrolledStudents.length}
+              {course.enrolledStudents.toLocaleString()}
             </div>
           )}
         </div>
@@ -102,7 +133,7 @@ const CourseCard = ({ course }: CourseCardProps) => {
         {course.duration && (
           <div className="flex items-center mb-3 text-xs text-muted-foreground">
             <Clock className="h-3 w-3 mr-1" />
-            {formatDuration(course?.duration)}
+            {formatDuration(course.duration)}
           </div>
         )}
 
@@ -114,9 +145,14 @@ const CourseCard = ({ course }: CourseCardProps) => {
         <div className="flex items-center">
           <span className="font-bold text-lg">${course.price.toFixed(2)}</span>
         </div>
-        <Button asChild size="sm">
+        <Button asChild size="sm" className="flex">
           <Link to={`/course/${course.id}`}>View Course</Link>
         </Button>
+        <div className="flex items-end">
+          <Button size="sm" onClick={handleAddToCart}>
+            Add To Cart
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );

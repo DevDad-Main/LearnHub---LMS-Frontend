@@ -138,11 +138,19 @@ const AllCourses = () => {
 
   const handleAddToCart = async (courseId: string) => {
     try {
-      await axios.post(`/api/v1/cart/add`, { courseId });
-      toast({
-        title: "Success",
-        description: "Course added to cart!",
-      });
+      const { data } = await axios.post(`/api/v1/cart/add`, { courseId });
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Course added to cart!",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.response?.data?.message || "Failed to load course",
+        });
+      }
     } catch (err: any) {
       toast({
         variant: "destructive",

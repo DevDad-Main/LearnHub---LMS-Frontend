@@ -402,7 +402,7 @@ const CourseForm = () => {
 
       let response;
       if (editingSectionId) {
-        response = await axios.put(
+        response = await axios.post(
           `/api/v1/course/${savedCourseId}/update-section/${editingSectionId}`,
           formData,
         );
