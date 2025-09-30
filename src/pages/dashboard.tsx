@@ -1,3 +1,4 @@
+import { useLocation } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "react-router-dom";
@@ -89,39 +90,64 @@ const Dashboard = () => {
   };
 
   const recommendedCourses = [];
-
+  const location = useLocation();
   const { toast } = useToast();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [coursesProgress, setCoursesProgress] = useState([]);
   const { axios, user } = useAppContext();
 
-  useEffect(() => {
-    const fetchUserDashboard = async () => {
-      try {
-        const { data } = await axios.get("/api/v1/users/dashboard");
+  const fetchUserDashboard = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/users/dashboard");
 
-        if (data.success) {
-          console.log(data);
-          // setEnrolledCourses(data.user.enrolledCourses);
-          setEnrolledCourses([]);
-        } else {
-          console.error(data.message);
-          toast({
-            variant: "destructive",
-            title: "Dashboard Failed",
-            description: data.response?.data?.message || data.message,
-          });
-        }
-      } catch (error) {
-        console.error(error);
+      if (data.success) {
+        console.log(data);
+        setEnrolledCourses(data.user.enrolledCourses);
+        setCoursesProgress(data.courseProgress);
+      } else {
+        console.error(data.message);
         toast({
           variant: "destructive",
           title: "Dashboard Failed",
-          description: error.response?.data?.message || error.message,
+          description: data.response?.data?.message || data.message,
         });
       }
-    };
+    } catch (error) {
+      console.error(error);
+      toast({
+        variant: "destructive",
+        title: "Dashboard Failed",
+        description: error.response?.data?.message || error.message,
+      });
+    }
+  };
+
+  const mergedCourses = enrolledCourses.map((enrolled) => {
+    const progress = coursesProgress.find(
+      (p) => p.course._id === enrolled.course._id,
+    );
+    return { ...enrolled, progress };
+  });
+
+  // // Fetch once on mount / user change
+  useEffect(() => {
     fetchUserDashboard();
   }, [user, axios]);
+  //
+  // // Refetch when coming back to /dashboard route
+  // useEffect(() => {
+  //   if (location.pathname === "/dashboard") {
+  //     fetchUserDashboard();
+  //   }
+  // }, [location.pathname]);
+
+  const getCourseProgress = (courseProgress) => {
+    const allLectures = courseProgress.course.sections.flatMap(
+      (s) => s.lectures || [],
+    );
+    const completedCount = courseProgress.completedLectures?.length || 0;
+    return Math.round((completedCount / allLectures.length) * 100);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 bg-background">
@@ -212,59 +238,91 @@ const Dashboard = () => {
 
         <TabsContent value="in-progress">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolledCourses.slice(0, 3).map((course) => (
-              <Card key={course.id} className="overflow-hidden">
-                <div className="relative h-48 w-full">
-                  <img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="h-full w-full object-cover"
-                  />
-                  <Badge className="absolute top-2 right-2">
-                    {course.category}
-                  </Badge>
-                </div>
-                <CardHeader>
-                  <CardTitle className="line-clamp-2">{course.title}</CardTitle>
-                  <CardDescription>
-                    Instructor: {course.instructor}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-2">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>{course.progress}% complete</span>
-                      <span>
-                        {course.completedLectures}/{course.totalLectures}{" "}
-                        lectures
-                      </span>
+            {[
+              ...new Map(
+                enrolledCourses.map((c) => [c.course?._id, c]),
+              ).values(),
+            ]
+              .slice(0, 3)
+              .map((course) => {
+                // find matching progress
+
+                const progressData = coursesProgress?.find(
+                  (cp) => cp.course._id === course.course._id,
+                );
+
+                if (progressData?.isCompleted) return null;
+
+                const progressPercent = progressData
+                  ? getCourseProgress(progressData)
+                  : 0;
+                const completedCount =
+                  progressData?.completedLectures?.length || 0;
+                const totalLectures =
+                  progressData?.course.sections.flatMap((s) => s.lectures || [])
+                    .length || 0;
+
+                return (
+                  <Card key={course.course._id} className="overflow-hidden">
+                    <div className="relative h-48 w-full">
+                      <img
+                        src={course?.course?.thumbnail}
+                        alt={course?.course?.title}
+                        className="h-full w-full object-cover"
+                      />
+                      <Badge className="absolute top-2 right-2">
+                        {course?.course?.category}
+                      </Badge>
                     </div>
-                    <Progress value={course.progress} className="h-2" />
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Last accessed: {course.lastAccessed?.toLocaleDateString()}
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild className="w-full">
-                    <Link to={`/course/${course.id}`}>Continue Learning</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                    <CardHeader>
+                      <CardTitle className="line-clamp-2">
+                        {course?.course?.title}
+                      </CardTitle>
+                      <CardDescription>
+                        Instructor: {course?.course?.instructor?.name}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="mb-2">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progress: {progressPercent}%</span>
+                          <span>
+                            {completedCount}/{totalLectures} lectures
+                          </span>
+                        </div>
+                        <Progress value={progressPercent} className="h-2" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Last accessed:{" "}
+                        {course.lastAccessed
+                          ? new Date(course.lastAccessed).toLocaleDateString()
+                          : "Never"}
+                      </p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button asChild className="w-full">
+                        <Link to={`/course/learn/${course?.course?._id}`}>
+                          Continue Learning
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}{" "}
           </div>
         </TabsContent>
 
         <TabsContent value="completed">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {enrolledCourses
-              .filter((course) => course.isCompleted)
+            {[...new Map(mergedCourses.map((c) => [c.course?._id, c])).values()]
+
+              .filter((course) => course.progress?.isCompleted)
               .map((course) => (
                 <Card key={course._id} className="overflow-hidden">
                   <div className="relative h-48 w-full">
                     <img
-                      src={course?.course?.thumbnail}
-                      alt={course?.course?.title}
+                      src={course.course?.thumbnail}
+                      alt={course.course?.title}
                       className="h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -278,20 +336,22 @@ const Dashboard = () => {
                   </div>
                   <CardHeader>
                     <CardTitle className="line-clamp-2">
-                      {course.title}
+                      {course.course?.title}
                     </CardTitle>
                     <CardDescription>
-                      Instructor: {course.instructor}
+                      Instructor: {course.course?.instructor?.name}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
-                      Completed all {course.totalLectures} lectures
+                      Completed all {course.progress?.totalLectures} lectures
                     </p>
                   </CardContent>
                   <CardFooter>
                     <Button asChild variant="outline" className="w-full">
-                      <Link to={`/course/${course.id}`}>Review Course</Link>
+                      <Link to={`/course/${course.course._id}`}>
+                        Review Course
+                      </Link>
                     </Button>
                   </CardFooter>
                 </Card>

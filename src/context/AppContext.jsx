@@ -244,6 +244,7 @@ export const AppContextProvider = ({ children }) => {
     fetchCourseById,
     courseById,
     isLoading,
+    setCoursesProgress,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

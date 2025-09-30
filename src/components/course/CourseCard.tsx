@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useAppContext } from "../../context/AppContext.jsx";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,7 @@ interface Instructor {
 }
 
 interface Course {
-  id: string;
+  _id: string;
   title: string;
   instructor: Instructor;
   rating: number;
@@ -44,6 +45,8 @@ interface CourseCardProps {
 
 const CourseCard = ({ course }: CourseCardProps) => {
   const { toast } = useToast();
+  const { enrolledCourses, studentCourses } = useAppContext();
+
   function formatDuration(seconds?: number) {
     if (!seconds) return "0m";
 
@@ -60,10 +63,14 @@ const CourseCard = ({ course }: CourseCardProps) => {
     }
   }
 
+  useEffect(() => {
+    console.log(studentCourses);
+  }, [studentCourses]);
+
   async function handleAddToCart() {
     try {
       const { data } = await axios.post("/api/v1/users/cart/add", {
-        courseId: course.id,
+        courseId: course._id,
       });
 
       if (data.success) {
@@ -145,14 +152,16 @@ const CourseCard = ({ course }: CourseCardProps) => {
         <div className="flex items-center">
           <span className="font-bold text-lg">${course.price.toFixed(2)}</span>
         </div>
-        <Button asChild size="sm" className="flex">
-          <Link to={`/course/${course.id}`}>View Course</Link>
-        </Button>
-        <div className="flex items-end">
+
+        {studentCourses?.find((sc) => sc.course._id === course._id) ? (
+          <Button asChild size="sm">
+            <Link to={`/course/learn/${course._id}`}>Continue Watching</Link>
+          </Button>
+        ) : (
           <Button size="sm" onClick={handleAddToCart}>
             Add To Cart
           </Button>
-        </div>
+        )}
       </CardFooter>
     </Card>
   );
