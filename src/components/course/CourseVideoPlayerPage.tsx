@@ -115,6 +115,9 @@ function CourseVideoPlayerPage() {
         if (!courseData) throw new Error("No course data found");
         setCourse(courseData);
 
+        // Setting the courseProgress last accessed field
+        await setLastAccessed(id);
+
         // Map lecture completion
         const completionMap: Record<string, boolean> = {};
         courseData.sections.forEach((section) => {
@@ -209,6 +212,20 @@ function CourseVideoPlayerPage() {
         description:
           err.response?.data?.message || "Failed to update lecture completion",
       });
+    }
+  };
+
+  const setLastAccessed = async (id) => {
+    try {
+      const { data } = await axios.post(`/api/v1/course/c/${id}/last-accessed`);
+
+      if (data.success) {
+        console.log(data);
+      } else {
+        console.log(data.message);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 

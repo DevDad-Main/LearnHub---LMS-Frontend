@@ -139,6 +139,8 @@ const Home = () => {
                       ? getCourseProgress(progressData)
                       : 0;
 
+                    if (progressData?.isCompleted) return null;
+
                     return (
                       <Card
                         key={studentCourse.course?._id}
