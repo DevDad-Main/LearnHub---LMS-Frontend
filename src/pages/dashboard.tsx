@@ -257,8 +257,10 @@ const Dashboard = () => {
                       </div>
                       <p className="text-sm text-muted-foreground">
                         Last accessed:{" "}
-                        {course.lastAccessed
-                          ? new Date(course.lastAccessed).toLocaleDateString()
+                        {course.progress?.lastAccessed
+                          ? new Date(
+                              course.progress?.lastAccessed,
+                            ).toLocaleDateString()
                           : "Never"}
                       </p>
                     </CardContent>
@@ -336,6 +338,31 @@ const Dashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Enrolled Courses */}
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Enrolled Courses</h2>
+          <Button variant="link" asChild>
+            <Link to="/">View All</Link>
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {enrolledCourses.map((course) => (
+            <CourseCard
+              key={course.course?._id}
+              id={course.course?._id}
+              title={course.course?.title}
+              instructor={course.course?.instructor?.name}
+              thumbnail={course.course?.thumbnail}
+              rating={course.rating}
+              price={course.course?.price}
+              category={course.course?.category}
+              description={course.course?.description}
+            />
+          ))}
+        </div>
+      </div>
 
       {/* Recommended Courses */}
       <div className="mb-8">
