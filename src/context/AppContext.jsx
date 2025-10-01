@@ -18,6 +18,7 @@ export const AppContextProvider = ({ children }) => {
   const [coursesProgress, setCoursesProgress] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [featuredCourses, setFeaturedCourses] = useState([]);
+  const [cart, setCart] = useState([]);
 
   //#region Register Account With Google
   const responseMessage = async (response) => {
@@ -49,10 +50,12 @@ export const AppContextProvider = ({ children }) => {
       const { data } = await axios.get("/api/v1/users/user-authenticated");
       if (data.success) {
         setUser(data.user);
+        setCart(data.user.cart || []);
       }
     } catch (error) {
       toast.error(error.message);
       setUser(null);
+      setCart([]);
     }
   };
   //#endregion
@@ -88,7 +91,7 @@ export const AppContextProvider = ({ children }) => {
         }
 
         setUser(null);
-        setCartItems([]);
+        setCart([]);
         navigate("/");
         toast.success(data.message);
       } else {
@@ -154,6 +157,7 @@ export const AppContextProvider = ({ children }) => {
 
   //#region Get Logged In students enrolled courses
   const fetchEnrolledCourses = async () => {
+    if (!user) return;
     try {
       const { data } = await axios.get("/api/v1/users/enrolled-courses");
       if (data.success) {
@@ -197,11 +201,28 @@ export const AppContextProvider = ({ children }) => {
   };
   //#endregion
 
+  //#region Get Items In Cart
+  const getCartItems = async () => {
+    try {
+      const { data } = await axios.get("/api/v1/users/cart/get");
+      if (data.success) {
+        setCart(data.cart);
+        // console.log(draftOrder);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+  //#endregion
+
   useEffect(() => {
     const init = async () => {
       try {
         await Promise.all([fetchUser(), fetchInstructor()]);
 
+        // if (!user) return;
         await fetchInstructorsCourses();
         await fetchFeaturedCourses();
       } finally {
@@ -245,6 +266,9 @@ export const AppContextProvider = ({ children }) => {
     courseById,
     isLoading,
     setCoursesProgress,
+    setCart,
+    cart,
+    getCartItems,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

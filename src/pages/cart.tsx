@@ -85,7 +85,7 @@ const Cart = () => {
   //   },
   // ]);
 
-  const { axios, user } = useAppContext();
+  const { axios, user, getCartItems } = useAppContext();
   const [cartItems, setCartItems] = useState([]);
 
   const { toast } = useToast();
@@ -178,7 +178,7 @@ const Cart = () => {
           title: "Course Removed",
           description: data.response?.data?.message,
         });
-        console.log(data.message);
+        await getCartItems();
         // setCartItems(data.cart);
         setCartItems(cartItems.filter((item) => item.course?._id !== id));
       } else {

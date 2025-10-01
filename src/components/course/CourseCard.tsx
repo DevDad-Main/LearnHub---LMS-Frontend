@@ -45,7 +45,7 @@ interface CourseCardProps {
 
 const CourseCard = ({ course }: CourseCardProps) => {
   const { toast } = useToast();
-  const { enrolledCourses, studentCourses } = useAppContext();
+  const { enrolledCourses, studentCourses, getCartItems } = useAppContext();
 
   function formatDuration(seconds?: number) {
     if (!seconds) return "0m";
@@ -63,10 +63,6 @@ const CourseCard = ({ course }: CourseCardProps) => {
     }
   }
 
-  useEffect(() => {
-    console.log(studentCourses);
-  }, [studentCourses]);
-
   async function handleAddToCart() {
     try {
       const { data } = await axios.post("/api/v1/users/cart/add", {
@@ -78,6 +74,7 @@ const CourseCard = ({ course }: CourseCardProps) => {
           title: "Course Added To Cart",
           description: `You have added ${course.title} to your cart!`,
         });
+        await getCartItems();
       } else {
         toast({
           variant: "destructive",

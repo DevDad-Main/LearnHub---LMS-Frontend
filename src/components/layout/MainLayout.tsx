@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Search, Menu, X, User, ShoppingCart, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,8 @@ import { useAppContext } from "../../context/AppContext";
 // }
 
 const MainLayout = () => {
-  const { user, instructor, handleLogout } = useAppContext();
+  const { user, instructor, handleLogout, cart, getCartItems } =
+    useAppContext();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = React.useState(false);
 
@@ -142,12 +143,19 @@ const MainLayout = () => {
               </Button>
             ) : null}
 
-            {/* Shopping Cart */}
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/cart">
-                <ShoppingCart className="h-5 w-5" />
-              </Link>
-            </Button>
+            <div className="relative">
+              <Button variant="ghost" size="icon" asChild>
+                <Link to="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                </Link>
+              </Button>
+
+              {(cart?.length ?? 0) > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                  {cart.length}
+                </span>
+              )}
+            </div>
 
             {/* User Menu or Login */}
             {user ? (
