@@ -183,7 +183,10 @@ const Home = () => {
                           </p>
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span>
-                              Last viewed {studentCourse.course?.lastViewed}
+                              Last viewed{" "}
+                              {new Date(
+                                progressData.lastAccessed,
+                              ).toLocaleDateString()}
                             </span>
                             <div className="flex items-center">
                               <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />

@@ -83,6 +83,7 @@ const Dashboard = () => {
 
       if (data.success) {
         console.log("Dashboard data:", data);
+        console.log(data.courseProgresses);
         setEnrolledCourses(data.user.enrolledCourses || []);
         setCoursesProgress(data.courseProgress || []);
       } else {
@@ -215,9 +216,11 @@ const Dashboard = () => {
 
         {/* In Progress */}
         <TabsContent value="in-progress">
+          <h3 className="text-2xl font-bold mb-3">Continue Learning</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mergedCourses
               .filter((course) => !course.progress?.isCompleted)
+              .slice(0, 3)
               .map((course) => {
                 const completedCount =
                   course.progress?.completedLectures?.length || 0;
@@ -340,29 +343,29 @@ const Dashboard = () => {
       </Tabs>
 
       {/* Enrolled Courses */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Enrolled Courses</h2>
-          <Button variant="link" asChild>
-            <Link to="/">View All</Link>
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {enrolledCourses.map((course) => (
-            <CourseCard
-              key={course.course?._id}
-              id={course.course?._id}
-              title={course.course?.title}
-              instructor={course.course?.instructor?.name}
-              thumbnail={course.course?.thumbnail}
-              rating={course.rating}
-              price={course.course?.price}
-              category={course.course?.category}
-              description={course.course?.description}
-            />
-          ))}
-        </div>
-      </div>
+      {/* <div className="mb-8"> */}
+      {/*   <div className="flex justify-between items-center mb-4"> */}
+      {/*     <h2 className="text-2xl font-bold">Enrolled Courses</h2> */}
+      {/*     <Button variant="link" asChild> */}
+      {/*       <Link to="/">View All</Link> */}
+      {/*     </Button> */}
+      {/*   </div> */}
+      {/*   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> */}
+      {/*     {enrolledCourses.map((course) => ( */}
+      {/*       <CourseCard */}
+      {/*         key={course.course?._id} */}
+      {/*         id={course.course?._id} */}
+      {/*         title={course.course?.title} */}
+      {/*         instructor={course.course?.instructor?.name} */}
+      {/*         thumbnail={course.course?.thumbnail} */}
+      {/*         rating={course.rating} */}
+      {/*         price={course.course?.price} */}
+      {/*         category={course.course?.category} */}
+      {/*         description={course.course?.description} */}
+      {/*       /> */}
+      {/*     ))} */}
+      {/*   </div> */}
+      {/* </div> */}
 
       {/* Recommended Courses */}
       <div className="mb-8">

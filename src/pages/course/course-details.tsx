@@ -355,7 +355,13 @@ const CourseDetails = () => {
                     {/* Profile Section */}
                     <div className="flex items-start space-x-6 mb-8">
                       <Avatar className="h-24 w-24 ring-2 ring-primary/20">
-                        <AvatarImage src={course?.instructor?.avatar} />
+                        <AvatarImage
+                          onClick={() =>
+                            navigate(`/instructor/${course?.instructor?._id}`)
+                          }
+                          src={course?.instructor?.avatar}
+                          className="cursor-pointer"
+                        />
                         <AvatarFallback>
                           {course?.instructor?.name
                             ?.split(" ")

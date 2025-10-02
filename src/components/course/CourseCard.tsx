@@ -45,7 +45,7 @@ interface CourseCardProps {
 
 const CourseCard = ({ course }: CourseCardProps) => {
   const { toast } = useToast();
-  const { enrolledCourses, studentCourses, getCartItems } = useAppContext();
+  const { navigate, studentCourses, getCartItems } = useAppContext();
 
   function formatDuration(seconds?: number) {
     if (!seconds) return "0m";
@@ -97,9 +97,10 @@ const CourseCard = ({ course }: CourseCardProps) => {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300 bg-background">
       <div className="relative h-48 w-full">
         <img
+          onClick={() => navigate(`/course/${course._id}`)}
           src={course.thumbnail}
           alt={course.title}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover cursor-pointer"
         />
         {course.category && (
           <Badge className="absolute top-2 right-2" variant="secondary">

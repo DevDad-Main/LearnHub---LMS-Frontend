@@ -21,6 +21,7 @@ import { Toaster } from "./components/ui/toaster.tsx";
 import AllCourses from "./pages/course/AllCourses.tsx";
 import CategoryCourses from "./pages/course/CategoryCourses.tsx";
 import Loading from "./components/Loading.jsx";
+import InstructorProfilePage from "./pages/instructor/InstructorProfilePage.tsx";
 
 function App() {
   const location = useLocation();
@@ -53,6 +54,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/loading" element={<Loading />} />
             <Route path="/course/:id" element={<CourseDetails />} />
+            <Route
+              path="/instructor/:instructorId"
+              element={<InstructorProfilePage />}
+            />
             <Route path="/courses" element={<AllCourses />} />
             <Route path="/categories/:category" element={<CategoryCourses />} />
             <Route
