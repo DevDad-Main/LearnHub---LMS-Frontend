@@ -301,7 +301,7 @@ const Home = () => {
         {/*   </div> */}
         {/* </section> */}
         {/**/}
-        {/* {/* Recommended for You */} */}
+        {/* {/* Recommended for You */}
         {/* {user ? ( */}
         {/*   <section className="py-16"> */}
         {/*     <div className="container"> */}

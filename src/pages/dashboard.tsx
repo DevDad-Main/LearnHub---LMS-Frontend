@@ -220,7 +220,7 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {mergedCourses
               .filter((course) => !course.progress?.isCompleted)
-              .slice(0, 3)
+              .slice(0, 6)
               .map((course) => {
                 const completedCount =
                   course.progress?.completedLectures?.length || 0;
