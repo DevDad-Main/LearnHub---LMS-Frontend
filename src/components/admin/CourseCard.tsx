@@ -18,7 +18,15 @@ import { Link } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 
 interface CourseCardProps {
-  course: {};
+  course: {
+    thumbnail: string;
+    _id: string;
+    title: string;
+    description: string;
+    category: string;
+    level: string;
+    price: number;
+  };
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onView?: (id: string) => void;

@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout";
 import Home from "./components/home";
@@ -24,11 +24,7 @@ import Loading from "./components/Loading.jsx";
 import InstructorProfilePage from "./pages/instructor/InstructorProfilePage.tsx";
 
 function App() {
-  const location = useLocation();
-  const { user, instructor, isLoading } = useAppContext();
-
-  const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/register";
+  const { instructor, isLoading, user } = useAppContext();
 
   if (isLoading) {
     return (

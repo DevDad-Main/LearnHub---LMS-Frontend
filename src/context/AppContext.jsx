@@ -116,7 +116,7 @@ export const AppContextProvider = ({ children }) => {
 
         navigate("/");
         setInstructor(null);
-        setCartItems([]);
+        setCart([]);
         toast.success(data.message);
       } else {
         toast.error(data.message);
@@ -220,9 +220,10 @@ export const AppContextProvider = ({ children }) => {
   useEffect(() => {
     const init = async () => {
       try {
-        await Promise.all([fetchUser(), fetchInstructor()]);
+        const user = await Promise.all([fetchUser()]);
+        // await Promise.all([fetchUser(), fetchInstructor()]);
 
-        // if (!user) return;
+        if (!user) return;
         await fetchInstructorsCourses();
         await fetchFeaturedCourses();
       } finally {
@@ -232,12 +233,16 @@ export const AppContextProvider = ({ children }) => {
     init();
   }, []);
 
-  useEffect(() => {
-    console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
-  }, []);
+  // useEffect(() => {
+  //   console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
+  // }, []);
 
   // useEffect(() => {
   //   fetchUser();
+  // }, []);
+
+  // useEffect(() => {
+  //   fetchUser();1
   //   fetchInstructor();
   //   // fetchCourses();
   //   fetchInstructorsCourses();
