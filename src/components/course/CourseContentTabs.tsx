@@ -23,7 +23,10 @@ interface CourseContentTabsProps {
   lectureId?: string;
 }
 
-const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
+const CourseContentTabs = ({
+  course,
+  getCurrentTime,
+}: CourseContentTabsProps) => {
   const { toast } = useToast();
   const { axios } = useAppContext();
   const [activeTab, setActiveTab] = useState("content");
@@ -61,6 +64,20 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
     { id: 3, name: "Lecture Slides.pptx", size: "5.8 MB", type: "PPTX" },
   ];
 
+  const formatTimestamp = (time: number) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    } else {
+      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    }
+  };
+
   // --- Handlers ---
   const handleQuestionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +87,7 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
 
   const handleNoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const timestamp = getCurrentTime();
     try {
       const { data } = await axios.post(`/api/v1/note/${course._id}/add`, {
         content: newNote,
@@ -79,7 +97,7 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
         toast({ title: "Success", description: "Note added successfully" });
         setNewNote("");
         setTimestamp("");
-        setNotes([...notes, data.note]);
+        setNotes([data.note, ...notes]);
       }
     } catch (err) {
       console.error(err);
@@ -128,6 +146,16 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
     };
     fetchNotes();
   }, [course?._id]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (getCurrentTime) {
+        setTimestamp(getCurrentTime()); // keep raw seconds
+      }
+    }, 1000); // update every 1s
+
+    return () => clearInterval(interval);
+  }, [getCurrentTime]);
 
   return (
     <div className="w-full bg-background">
@@ -328,10 +356,10 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
                       <Input
                         type="text"
                         placeholder="00:00"
-                        value={timestamp}
-                        onChange={(e) => setTimestamp(e.target.value)}
+                        value={formatTimestamp(timestamp)}
+                        readOnly
                         className="text-center"
-                      />
+                      />{" "}
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Current timestamp
@@ -360,7 +388,7 @@ const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
                       >
                         <div className="flex justify-between items-center mb-2">
                           <div className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                            {note.timeStamp}
+                            {formatTimestamp(note.timeStamp)}
                           </div>
                           <span className="text-xs text-muted-foreground mt-8">
                             {new Date(note.createdAt).toLocaleDateString()}

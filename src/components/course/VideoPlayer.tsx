@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
 import {
   Play,
   Pause,
@@ -38,422 +44,440 @@ interface VideoPlayerProps {
   lecture: Lecture | undefined;
 }
 
-const VideoPlayer = ({ lecture }: VideoPlayerProps) => {
-  if (!lecture) {
-    return (
-      <Card className="w-full h-full flex items-center justify-center">
-        <CardContent>
-          <p className="text-muted-foreground">No lecture selected</p>
-        </CardContent>
-      </Card>
-    );
-  }
+export interface VideoPlayerHandle {
+  getCurrentTime: () => number;
+}
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showControls, setShowControls] = useState(true);
-  const [playbackRate, setPlaybackRate] = useState(1);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Format time in MM:SS format
-  const formatTime = (timeInSeconds: number) => {
-    const minutes = Math.floor(timeInSeconds / 60);
-    const seconds = Math.floor(timeInSeconds % 60);
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
-
-  // Handle play/pause
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play().catch((err) => {
-          console.error("Error playing video:", err);
-        });
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
-  // Handle volume change
-  const handleVolumeChange = (value: number[]) => {
-    const newVolume = value[0];
-    setVolume(newVolume);
-    if (videoRef.current) {
-      videoRef.current.volume = newVolume;
-      setIsMuted(newVolume === 0);
-    }
-  };
-
-  // Handle mute toggle
-  const toggleMute = () => {
-    if (videoRef.current) {
-      if (isMuted) {
-        videoRef.current.volume = volume || 1;
-        setIsMuted(false);
-      } else {
-        videoRef.current.volume = 0;
-        setIsMuted(true);
-      }
-    }
-  };
-
-  // Handle seeking
-  const handleSeek = (value: number[]) => {
-    const seekTime = value[0];
-    setCurrentTime(seekTime);
-    if (videoRef.current) {
-      videoRef.current.currentTime = seekTime;
-    }
-  };
-
-  // Handle fullscreen
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement && playerRef.current) {
-      playerRef.current.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
-      setIsFullscreen(true);
-    } else if (document.fullscreenElement) {
-      document.exitFullscreen().catch((err) => {
-        console.error(`Error exiting fullscreen: ${err.message}`);
-      });
-      setIsFullscreen(false);
-    }
-  };
-
-  // Handle playback rate change
-  const handlePlaybackRateChange = (value: string) => {
-    const rate = parseFloat(value);
-    setPlaybackRate(rate);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = rate;
-    }
-  };
-
-  // Show/hide controls on mouse movement
-  const handleMouseMove = () => {
-    setShowControls(true);
-
-    if (controlsTimeoutRef.current) {
-      clearTimeout(controlsTimeoutRef.current);
+const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
+  ({ lecture }, ref) => {
+    if (!lecture) {
+      return (
+        <Card className="w-full h-full flex items-center justify-center">
+          <CardContent>
+            <p className="text-muted-foreground">No lecture selected</p>
+          </CardContent>
+        </Card>
+      );
     }
 
-    controlsTimeoutRef.current = setTimeout(() => {
-      if (isPlaying) {
-        setShowControls(false);
-      }
-    }, 3000);
-  };
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showControls, setShowControls] = useState(true);
+    const [playbackRate, setPlaybackRate] = useState(1);
 
-  // Sync video state with component state
-  useEffect(() => {
-    const video = videoRef.current;
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const playerRef = useRef<HTMLDivElement>(null);
+    const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const handleTimeUpdate = () => {
-      if (video) {
-        setCurrentTime(video.currentTime);
+    // 👇 Expose methods to parent
+    useImperativeHandle(ref, () => ({
+      getCurrentTime: () => videoRef.current?.currentTime || 0,
+    })); // Format time in MM:SS format
+    const formatTime = (timeInSeconds: number) => {
+      const minutes = Math.floor(timeInSeconds / 60);
+      const seconds = Math.floor(timeInSeconds % 60);
+      return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    };
+
+    // Handle play/pause
+    const togglePlay = () => {
+      if (videoRef.current) {
+        if (isPlaying) {
+          videoRef.current.pause();
+        } else {
+          videoRef.current.play().catch((err) => {
+            console.error("Error playing video:", err);
+          });
+        }
+        setIsPlaying(!isPlaying);
       }
     };
 
-    const handleLoadedMetadata = () => {
-      if (video) {
-        setDuration(video.duration || 0);
-        setVolume(video.volume);
-        setIsMuted(video.volume === 0);
-        if (video.autoplay) {
-          setIsPlaying(true);
+    // Handle volume change
+    const handleVolumeChange = (value: number[]) => {
+      const newVolume = value[0];
+      setVolume(newVolume);
+      if (videoRef.current) {
+        videoRef.current.volume = newVolume;
+        setIsMuted(newVolume === 0);
+      }
+    };
+
+    // Handle mute toggle
+    const toggleMute = () => {
+      if (videoRef.current) {
+        if (isMuted) {
+          videoRef.current.volume = volume || 1;
+          setIsMuted(false);
+        } else {
+          videoRef.current.volume = 0;
+          setIsMuted(true);
         }
       }
     };
 
-    const handleEnded = () => {
-      setIsPlaying(false);
-      // Note: onNext is commented out in original code
-      // if (hasNext && onNext) {
-      //   onNext();
-      // }
-    };
-
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-
-    if (video) {
-      video.addEventListener("timeupdate", handleTimeUpdate);
-      video.addEventListener("loadedmetadata", handleLoadedMetadata);
-      video.addEventListener("ended", handleEnded);
-      video.addEventListener("play", handlePlay);
-      video.addEventListener("pause", handlePause);
-    }
-
-    return () => {
-      if (video) {
-        video.removeEventListener("timeupdate", handleTimeUpdate);
-        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-        video.removeEventListener("ended", handleEnded);
-        video.removeEventListener("play", handlePlay);
-        video.removeEventListener("pause", handlePause);
+    // Handle seeking
+    const handleSeek = (value: number[]) => {
+      const seekTime = value[0];
+      setCurrentTime(seekTime);
+      if (videoRef.current) {
+        videoRef.current.currentTime = seekTime;
       }
+    };
+
+    // Handle fullscreen
+    const toggleFullscreen = () => {
+      if (!document.fullscreenElement && playerRef.current) {
+        playerRef.current.requestFullscreen().catch((err) => {
+          console.error(
+            `Error attempting to enable fullscreen: ${err.message}`,
+          );
+        });
+        setIsFullscreen(true);
+      } else if (document.fullscreenElement) {
+        document.exitFullscreen().catch((err) => {
+          console.error(`Error exiting fullscreen: ${err.message}`);
+        });
+        setIsFullscreen(false);
+      }
+    };
+
+    // Handle playback rate change
+    const handlePlaybackRateChange = (value: string) => {
+      const rate = parseFloat(value);
+      setPlaybackRate(rate);
+      if (videoRef.current) {
+        videoRef.current.playbackRate = rate;
+      }
+    };
+
+    // Show/hide controls on mouse movement
+    const handleMouseMove = () => {
+      setShowControls(true);
+
       if (controlsTimeoutRef.current) {
         clearTimeout(controlsTimeoutRef.current);
       }
-    };
-  }, []);
 
-  // Handle keyboard controls
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space" && e.target === document.body) {
-        e.preventDefault();
-        togglePlay();
-      }
-      if (e.code === "ArrowRight" && videoRef.current) {
-        videoRef.current.currentTime += 5;
-      }
-      if (e.code === "ArrowLeft" && videoRef.current) {
-        videoRef.current.currentTime -= 5;
-      }
-      if (e.code === "KeyM") {
-        toggleMute();
-      }
-      if (e.code === "KeyF" && e.target === document.body) {
-        toggleFullscreen();
-      }
+      controlsTimeoutRef.current = setTimeout(() => {
+        if (isPlaying) {
+          setShowControls(false);
+        }
+      }, 3000);
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    // Sync video state with component state
+    useEffect(() => {
+      const video = videoRef.current;
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isPlaying]);
+      const handleTimeUpdate = () => {
+        if (video) {
+          setCurrentTime(video.currentTime);
+        }
+      };
 
-  // Handle fullscreen change
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+      const handleLoadedMetadata = () => {
+        if (video) {
+          setDuration(video.duration || 0);
+          setVolume(video.volume);
+          setIsMuted(video.volume === 0);
+          if (video.autoplay) {
+            setIsPlaying(true);
+          }
+        }
+      };
 
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
+      const handleEnded = () => {
+        setIsPlaying(false);
+        // Note: onNext is commented out in original code
+        // if (hasNext && onNext) {
+        //   onNext();
+        // }
+      };
 
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
+      const handlePlay = () => {
+        setIsPlaying(true);
+      };
 
-  return (
-    <div
-      ref={playerRef}
-      className="relative w-full h-full bg-black overflow-hidden"
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => isPlaying && setShowControls(false)}
-    >
-      {/* Video Player Element */}
-      <video
-        ref={videoRef}
-        src={lecture.video}
-        className="w-full h-full object-contain"
-        autoPlay
-        playsInline // Prevents iOS from forcing fullscreen
-      />
+      const handlePause = () => {
+        setIsPlaying(false);
+      };
 
-      {/* Video Title Overlay */}
+      if (video) {
+        video.addEventListener("timeupdate", handleTimeUpdate);
+        video.addEventListener("loadedmetadata", handleLoadedMetadata);
+        video.addEventListener("ended", handleEnded);
+        video.addEventListener("play", handlePlay);
+        video.addEventListener("pause", handlePause);
+      }
+
+      return () => {
+        if (video) {
+          video.removeEventListener("timeupdate", handleTimeUpdate);
+          video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+          video.removeEventListener("ended", handleEnded);
+          video.removeEventListener("play", handlePlay);
+          video.removeEventListener("pause", handlePause);
+        }
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    // Handle keyboard controls
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.code === "Space" && e.target === document.body) {
+          e.preventDefault();
+          togglePlay();
+        }
+        if (e.code === "ArrowRight" && videoRef.current) {
+          videoRef.current.currentTime += 5;
+        }
+        if (e.code === "ArrowLeft" && videoRef.current) {
+          videoRef.current.currentTime -= 5;
+        }
+        if (e.code === "KeyM") {
+          toggleMute();
+        }
+        if (e.code === "KeyF" && e.target === document.body) {
+          toggleFullscreen();
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [isPlaying]);
+
+    // Handle fullscreen change
+    useEffect(() => {
+      const handleFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement);
+      };
+
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+      return () => {
+        document.removeEventListener(
+          "fullscreenchange",
+          handleFullscreenChange,
+        );
+      };
+    }, []);
+
+    return (
       <div
-        className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 text-white transition-opacity duration-300"
-        style={{ opacity: showControls ? 1 : 0 }}
+        ref={playerRef}
+        className="relative w-full h-full bg-black overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => isPlaying && setShowControls(false)}
       >
-        <h3 className="text-lg font-medium">{lecture.title}</h3>
-      </div>
+        {/* Video Player Element */}
+        <video
+          ref={videoRef}
+          src={lecture.video}
+          className="w-full h-full object-contain"
+          autoPlay
+          playsInline // Prevents iOS from forcing fullscreen
+        />
 
-      {/* Play/Pause Overlay */}
-      <div
-        className="absolute inset-0 flex items-center justify-center transition-opacity duration-300"
-        style={{ opacity: !isPlaying && showControls ? 1 : 0 }}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-16 w-16 rounded-full bg-black/30 text-white hover:bg-black/50"
-          onClick={togglePlay}
+        {/* Video Title Overlay */}
+        <div
+          className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/70 to-transparent p-4 text-white transition-opacity duration-300"
+          style={{ opacity: showControls ? 1 : 0 }}
         >
-          <Play className="h-8 w-8" />
-        </Button>
-      </div>
-
-      {/* Controls Overlay */}
-      <div
-        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 transition-opacity duration-300"
-        style={{ opacity: showControls ? 1 : 0 }}
-      >
-        {/* Progress Bar */}
-        <div className="mb-2">
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            onValueChange={handleSeek}
-            className="cursor-pointer"
-          />
+          <h3 className="text-lg font-medium">{lecture.title}</h3>
         </div>
 
-        {/* Controls Row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            {/* Play/Pause Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              onClick={togglePlay}
-            >
-              {isPlaying ? (
-                <Pause className="h-5 w-5" />
-              ) : (
-                <Play className="h-5 w-5" />
-              )}
-            </Button>
+        {/* Play/Pause Overlay */}
+        <div
+          className="absolute inset-0 flex items-center justify-center transition-opacity duration-300"
+          style={{ opacity: !isPlaying && showControls ? 1 : 0 }}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-16 w-16 rounded-full bg-black/30 text-white hover:bg-black/50"
+            onClick={togglePlay}
+          >
+            <Play className="h-8 w-8" />
+          </Button>
+        </div>
 
-            {/* Previous/Next Buttons */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              disabled // Uncomment and pass onPrevious/hasPrevious if needed
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              disabled // Uncomment and pass onNext/hasNext if needed
-            >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+        {/* Controls Overlay */}
+        <div
+          className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 transition-opacity duration-300"
+          style={{ opacity: showControls ? 1 : 0 }}
+        >
+          {/* Progress Bar */}
+          <div className="mb-2">
+            <Slider
+              value={[currentTime]}
+              min={0}
+              max={duration || 100}
+              step={0.1}
+              onValueChange={handleSeek}
+              className="cursor-pointer"
+            />
+          </div>
 
-            {/* Volume Control */}
-            <div className="flex items-center">
+          {/* Controls Row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {/* Play/Pause Button */}
               <Button
                 variant="ghost"
                 size="icon"
                 className="text-white hover:bg-white/20"
-                onClick={toggleMute}
+                onClick={togglePlay}
               >
-                {isMuted ? (
-                  <VolumeX className="h-5 w-5" />
+                {isPlaying ? (
+                  <Pause className="h-5 w-5" />
                 ) : (
-                  <Volume2 className="h-5 w-5" />
+                  <Play className="h-5 w-5" />
                 )}
               </Button>
-              <div className="hidden sm:block w-24">
-                <Slider
-                  value={[isMuted ? 0 : volume]}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onValueChange={handleVolumeChange}
-                  className="cursor-pointer"
-                />
-              </div>
-            </div>
 
-            {/* Time Display */}
-            <div className="text-xs text-white">
-              {formatTime(currentTime)} / {formatTime(duration || 0)}
-            </div>
-          </div>
+              {/* Previous/Next Buttons */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20"
+                disabled // Uncomment and pass onPrevious/hasPrevious if needed
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20"
+                disabled // Uncomment and pass onNext/hasNext if needed
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
 
-          <div className="flex items-center space-x-2">
-            {/* Playback Speed */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/20 text-xs"
-                >
-                  {playbackRate}x
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-32 p-0">
-                <div className="grid grid-cols-1 gap-1 p-1">
-                  {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
-                    <Button
-                      key={rate}
-                      variant="ghost"
-                      size="sm"
-                      className={`justify-start ${playbackRate === rate ? "bg-accent" : ""}`}
-                      onClick={() => handlePlaybackRateChange(rate.toString())}
-                    >
-                      {rate}x
-                    </Button>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Settings Button */}
-            <Popover>
-              <PopoverTrigger asChild>
+              {/* Volume Control */}
+              <div className="flex items-center">
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/20"
+                  onClick={toggleMute}
                 >
-                  <Settings className="h-5 w-5" />
+                  {isMuted ? (
+                    <VolumeX className="h-5 w-5" />
+                  ) : (
+                    <Volume2 className="h-5 w-5" />
+                  )}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56 p-2">
-                <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Quality</span>
-                    <Select
-                      defaultValue="720p"
-                      onValueChange={(value) => console.log("Quality:", value)}
-                    >
-                      <SelectTrigger className="w-24">
-                        <SelectValue placeholder="Quality" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1080p">1080p</SelectItem>
-                        <SelectItem value="720p">720p</SelectItem>
-                        <SelectItem value="480p">480p</SelectItem>
-                        <SelectItem value="360p">360p</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="hidden sm:block w-24">
+                  <Slider
+                    value={[isMuted ? 0 : volume]}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    onValueChange={handleVolumeChange}
+                    className="cursor-pointer"
+                  />
                 </div>
-              </PopoverContent>
-            </Popover>
+              </div>
 
-            {/* Fullscreen Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-white hover:bg-white/20"
-              onClick={toggleFullscreen}
-            >
-              <Maximize className="h-5 w-5" />
-            </Button>
+              {/* Time Display */}
+              <div className="text-xs text-white">
+                {formatTime(currentTime)} / {formatTime(duration || 0)}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              {/* Playback Speed */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/20 text-xs"
+                  >
+                    {playbackRate}x
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-32 p-0">
+                  <div className="grid grid-cols-1 gap-1 p-1">
+                    {[0.5, 0.75, 1, 1.25, 1.5, 1.75, 2].map((rate) => (
+                      <Button
+                        key={rate}
+                        variant="ghost"
+                        size="sm"
+                        className={`justify-start ${playbackRate === rate ? "bg-accent" : ""}`}
+                        onClick={() =>
+                          handlePlaybackRateChange(rate.toString())
+                        }
+                      >
+                        {rate}x
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Settings Button */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2">
+                  <div className="grid gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Quality</span>
+                      <Select
+                        defaultValue="720p"
+                        onValueChange={(value) =>
+                          console.log("Quality:", value)
+                        }
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue placeholder="Quality" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1080p">1080p</SelectItem>
+                          <SelectItem value="720p">720p</SelectItem>
+                          <SelectItem value="480p">480p</SelectItem>
+                          <SelectItem value="360p">360p</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Fullscreen Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/20"
+                onClick={toggleFullscreen}
+              >
+                <Maximize className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+);
 
 export default VideoPlayer;

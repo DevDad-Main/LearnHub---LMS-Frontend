@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { useToast } from "@/components/ui/use-toast";
-import VideoPlayer from "./VideoPlayer";
+import VideoPlayer, { VideoPlayerHandle } from "./VideoPlayer";
 import CourseSidebar from "./CourseSidebar";
 import CourseContentTabs from "./CourseContentTabs";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,7 @@ function CourseVideoPlayerPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const videoPlayerRef = useRef<VideoPlayerHandle>(null);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(null);
@@ -369,6 +370,7 @@ function CourseVideoPlayerPage() {
             className="bg-black flex items-center justify-center h-[70vh] mr-14"
           >
             <VideoPlayer
+              ref={videoPlayerRef}
               lecture={course.sections
                 .flatMap((section) => section.lectures)
                 .find((lecture) => lecture._id === currentLectureId)}
@@ -382,7 +384,12 @@ function CourseVideoPlayerPage() {
           {/* Content tabs section */}
           <div className="bg-background border-t">
             <div className="max-w-6xl mx-auto p-6">
-              <CourseContentTabs course={course} />
+              <CourseContentTabs
+                course={course}
+                getCurrentTime={() =>
+                  videoPlayerRef.current?.getCurrentTime() ?? 0
+                }
+              />
             </div>
           </div>
         </div>
