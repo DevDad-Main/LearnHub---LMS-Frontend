@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,23 +14,25 @@ import {
   FileQuestion,
   Download,
   ThumbsUp,
+  Trash2,
 } from "lucide-react";
+import { useAppContext } from "../../context/AppContext";
 
 interface CourseContentTabsProps {
   courseId?: string;
   lectureId?: string;
 }
 
-const CourseContentTabs = ({
-  course,
-  // courseId = "1",
-  // lectureId = "1",
-}: CourseContentTabsProps) => {
+const CourseContentTabs = ({ course }: CourseContentTabsProps) => {
+  const { toast } = useToast();
+  const { axios } = useAppContext();
   const [activeTab, setActiveTab] = useState("content");
   const [newQuestion, setNewQuestion] = useState("");
   const [newNote, setNewNote] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [timestamp, setTimestamp] = useState("");
 
-  // Mock data for demonstration
+  // Mock questions
   const questions = [
     {
       id: 1,
@@ -52,56 +55,79 @@ const CourseContentTabs = ({
     },
   ];
 
-  const notes = [
-    {
-      id: 1,
-      timestamp: "05:23",
-      content: "React hooks must be called at the top level of components",
-      date: "Apr 15, 2024",
-    },
-    {
-      id: 2,
-      timestamp: "12:45",
-      content:
-        "Remember to add dependencies array to useEffect to prevent infinite loops",
-      date: "Apr 16, 2024",
-    },
-  ];
-
   const resources = [
-    {
-      id: 1,
-      name: "React Hooks Cheatsheet.pdf",
-      size: "1.2 MB",
-      type: "PDF",
-    },
-    {
-      id: 2,
-      name: "Project Source Code.zip",
-      size: "3.5 MB",
-      type: "ZIP",
-    },
-    {
-      id: 3,
-      name: "Lecture Slides.pptx",
-      size: "5.8 MB",
-      type: "PPTX",
-    },
+    { id: 1, name: "React Hooks Cheatsheet.pdf", size: "1.2 MB", type: "PDF" },
+    { id: 2, name: "Project Source Code.zip", size: "3.5 MB", type: "ZIP" },
+    { id: 3, name: "Lecture Slides.pptx", size: "5.8 MB", type: "PPTX" },
   ];
 
+  // --- Handlers ---
   const handleQuestionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the question to your backend
     console.log("Question submitted:", newQuestion);
     setNewQuestion("");
   };
 
-  const handleNoteSubmit = (e: React.FormEvent) => {
+  const handleNoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the note to your backend
-    console.log("Note submitted:", newNote);
-    setNewNote("");
+    try {
+      const { data } = await axios.post(`/api/v1/note/${course._id}/add`, {
+        content: newNote,
+        timeStamp: timestamp,
+      });
+      if (data.success) {
+        toast({ title: "Success", description: "Note added successfully" });
+        setNewNote("");
+        setTimestamp("");
+        setNotes([...notes, data.note]);
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: "Failed to add note",
+        variant: "destructive",
+      });
+    }
   };
+
+  const handleDeleteNote = async (noteId: string) => {
+    try {
+      const { data } = await axios.delete(
+        `/api/v1/note/${course._id}/${noteId}`,
+      );
+      if (data.success) {
+        setNotes(notes.filter((n) => n._id !== noteId));
+        toast({ title: "Deleted", description: "Note removed successfully" });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Error",
+        description: "Failed to delete note",
+        variant: "destructive",
+      });
+    }
+  };
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const { data } = await axios.get(`/api/v1/note/${course._id}/notes`);
+        if (data.success) {
+          setNotes(data.notes || []);
+        }
+      } catch (err) {
+        console.error(err);
+        toast({
+          title: "Error",
+          description: "Failed to fetch notes",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchNotes();
+  }, [course?._id]);
 
   return (
     <div className="w-full bg-background">
@@ -134,6 +160,7 @@ const CourseContentTabs = ({
           </TabsTrigger>
         </TabsList>
 
+        {/* Course Content */}
         <TabsContent value="content" className="border rounded-md p-4">
           <div className="space-y-6">
             {/* Instructor Section */}
@@ -220,19 +247,13 @@ const CourseContentTabs = ({
                   {course?.learnableSkills.map((skill, index) => (
                     <li key={index}>{skill}</li>
                   ))}
-                  {/* <li> */}
-                  {/*   Build powerful, fast, user-friendly and reactive web apps */}
-                  {/* </li> */}
-                  {/* <li>Apply for high-paid jobs or work as a freelancer</li> */}
-                  {/* <li>Master React Hooks and React Components</li> */}
-                  {/* <li>Manage complex state efficiently with Redux</li> */}
-                  {/* <li>Build real-world projects for your portfolio</li> */}
                 </ul>
               </div>
             </div>
           </div>
         </TabsContent>
 
+        {/* Q&A */}
         <TabsContent value="qa" className="border rounded-md">
           <Card>
             <CardContent className="p-4">
@@ -250,7 +271,6 @@ const CourseContentTabs = ({
                   </Button>
                 </form>
               </div>
-
               <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">
                   Questions in this lecture
@@ -296,6 +316,7 @@ const CourseContentTabs = ({
           </Card>
         </TabsContent>
 
+        {/* Notes */}
         <TabsContent value="notes" className="border rounded-md">
           <Card>
             <CardContent className="p-4">
@@ -307,6 +328,8 @@ const CourseContentTabs = ({
                       <Input
                         type="text"
                         placeholder="00:00"
+                        value={timestamp}
+                        onChange={(e) => setTimestamp(e.target.value)}
                         className="text-center"
                       />
                     </div>
@@ -328,19 +351,30 @@ const CourseContentTabs = ({
 
               <div className="mt-8">
                 <h3 className="text-lg font-semibold mb-4">Your Notes</h3>
-                <ScrollArea className="h-[300px] pr-4">
+                <ScrollArea className="max-h-[500px] pr-4">
                   <div className="space-y-4">
                     {notes.map((note) => (
-                      <div key={note.id} className="border p-4 rounded-md">
+                      <div
+                        key={note._id}
+                        className="border p-4 rounded-md relative"
+                      >
                         <div className="flex justify-between items-center mb-2">
                           <div className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                            {note.timestamp}
+                            {note.timeStamp}
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {note.date}
+                          <span className="text-xs text-muted-foreground mt-8">
+                            {new Date(note.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         <p className="text-sm">{note.content}</p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 bottom-2"
+                          onClick={() => handleDeleteNote(note._id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -350,6 +384,7 @@ const CourseContentTabs = ({
           </Card>
         </TabsContent>
 
+        {/* Resources */}
         <TabsContent value="resources" className="border rounded-md">
           <Card>
             <CardContent className="p-4">

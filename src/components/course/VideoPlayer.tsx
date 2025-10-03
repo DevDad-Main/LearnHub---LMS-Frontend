@@ -216,7 +216,7 @@ const VideoPlayer = ({ lecture }: VideoPlayerProps) => {
   // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
+      if (e.code === "Space" && e.target === document.body) {
         e.preventDefault();
         togglePlay();
       }
@@ -229,7 +229,7 @@ const VideoPlayer = ({ lecture }: VideoPlayerProps) => {
       if (e.code === "KeyM") {
         toggleMute();
       }
-      if (e.code === "KeyF") {
+      if (e.code === "KeyF" && e.target === document.body) {
         toggleFullscreen();
       }
     };

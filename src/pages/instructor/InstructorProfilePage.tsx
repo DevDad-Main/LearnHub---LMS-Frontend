@@ -234,7 +234,10 @@ const InstructorProfilePage = () => {
                   <div className="text-center p-4 bg-muted/50 rounded-lg">
                     <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
                     <div className="text-2xl font-bold">
-                      {instructor.totalStudents || 0}
+                      {instructor.createdCourses.reduce((acc, course) => {
+                        return acc + course.enrolledStudents.length;
+                      }, 0)}
+                      {/* {instructor.totalStudents || 0} */}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Students
