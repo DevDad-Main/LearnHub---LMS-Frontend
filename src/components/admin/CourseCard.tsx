@@ -59,7 +59,7 @@ const CourseCard = ({
       <div className="relative h-48 overflow-hidden">
         <img
           src={
-            course?.thumbnail ||
+            course.thumbnail ||
             "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
           }
           alt={course?.title}

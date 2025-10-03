@@ -228,136 +228,136 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Trending Courses */}
-        <section className="py-8">
-          <div className="container">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center">
-                <TrendingUp className="h-6 w-6 mr-2 text-primary" />
-                <h2 className="text-3xl font-bold">Trending Now</h2>
-              </div>
-              <Link to="/trending">
-                <Button variant="ghost" className="text-primary">
-                  View all <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {trendingCourses.map((course) => (
-                <Card
-                  key={course.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative">
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="w-full h-48 object-cover"
-                    />
-                    <Badge className="absolute top-2 left-2 bg-red-500 text-white">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Trending
-                    </Badge>
-                    <Badge
-                      className="absolute top-2 right-2"
-                      variant="secondary"
-                    >
-                      {course.enrollmentGrowth}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold line-clamp-2 mb-2">
-                      {course.title}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      By {course.instructor}
-                    </p>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                      {course.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm">
-                        <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                        <span className="font-medium mr-1">
-                          {course.rating}
-                        </span>
-                        <span className="text-muted-foreground">
-                          ({course.reviewCount.toLocaleString()})
-                        </span>
-                      </div>
-                      <span className="font-bold">${course.price}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-10 text-center">
-              <Link to="/courses">
-                <Button size="lg" variant="outline">
-                  View all courses
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Recommended for You */}
-        {user ? (
-          <section className="py-16">
-            <div className="container">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center">
-                  <Award className="h-6 w-6 mr-2 text-primary" />
-                  <h2 className="text-3xl font-bold">Recommended for You</h2>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {recommendedCourses.map((course) => (
-                  <Card
-                    key={course.id}
-                    className="overflow-hidden hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex">
-                      <div className="w-48 h-32">
-                        <img
-                          src={course.thumbnail}
-                          alt={course.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <CardContent className="flex-1 p-4">
-                        <Badge variant="outline" className="mb-2 text-xs">
-                          {course.matchReason}
-                        </Badge>
-                        <h3 className="font-semibold line-clamp-2 mb-2">
-                          {course.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-2">
-                          By {course.instructor}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
-                          {course.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-sm">
-                            <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                            <span className="font-medium mr-1">
-                              {course.rating}
-                            </span>
-                            <span className="text-muted-foreground">
-                              ({course.reviewCount.toLocaleString()})
-                            </span>
-                          </div>
-                          <span className="font-bold">${course.price}</span>
-                        </div>
-                      </CardContent>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </section>
-        ) : null}
+        {/* {/* Trending Courses */}
+        {/* <section className="py-8"> */}
+        {/*   <div className="container"> */}
+        {/*     <div className="flex items-center justify-between mb-8"> */}
+        {/*       <div className="flex items-center"> */}
+        {/*         <TrendingUp className="h-6 w-6 mr-2 text-primary" /> */}
+        {/*         <h2 className="text-3xl font-bold">Trending Now</h2> */}
+        {/*       </div> */}
+        {/*       <Link to="/trending"> */}
+        {/*         <Button variant="ghost" className="text-primary"> */}
+        {/*           View all <ChevronRight className="h-4 w-4 ml-1" /> */}
+        {/*         </Button> */}
+        {/*       </Link> */}
+        {/*     </div> */}
+        {/*     <div className="grid grid-cols-1 md:grid-cols-3 gap-6"> */}
+        {/*       {trendingCourses.map((course) => ( */}
+        {/*         <Card */}
+        {/*           key={course.id} */}
+        {/*           className="overflow-hidden hover:shadow-lg transition-shadow" */}
+        {/*         > */}
+        {/*           <div className="relative"> */}
+        {/*             <img */}
+        {/*               src={course.thumbnail} */}
+        {/*               alt={course.title} */}
+        {/*               className="w-full h-48 object-cover" */}
+        {/*             /> */}
+        {/*             <Badge className="absolute top-2 left-2 bg-red-500 text-white"> */}
+        {/*               <TrendingUp className="h-3 w-3 mr-1" /> */}
+        {/*               Trending */}
+        {/*             </Badge> */}
+        {/*             <Badge */}
+        {/*               className="absolute top-2 right-2" */}
+        {/*               variant="secondary" */}
+        {/*             > */}
+        {/*               {course.enrollmentGrowth} */}
+        {/*             </Badge> */}
+        {/*           </div> */}
+        {/*           <CardContent className="p-4"> */}
+        {/*             <h3 className="font-semibold line-clamp-2 mb-2"> */}
+        {/*               {course.title} */}
+        {/*             </h3> */}
+        {/*             <p className="text-sm text-muted-foreground mb-2"> */}
+        {/*               By {course.instructor} */}
+        {/*             </p> */}
+        {/*             <p className="text-xs text-muted-foreground line-clamp-2 mb-3"> */}
+        {/*               {course.description} */}
+        {/*             </p> */}
+        {/*             <div className="flex items-center justify-between"> */}
+        {/*               <div className="flex items-center text-sm"> */}
+        {/*                 <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" /> */}
+        {/*                 <span className="font-medium mr-1"> */}
+        {/*                   {course.rating} */}
+        {/*                 </span> */}
+        {/*                 <span className="text-muted-foreground"> */}
+        {/*                   ({course.reviewCount.toLocaleString()}) */}
+        {/*                 </span> */}
+        {/*               </div> */}
+        {/*               <span className="font-bold">${course.price}</span> */}
+        {/*             </div> */}
+        {/*           </CardContent> */}
+        {/*         </Card> */}
+        {/*       ))} */}
+        {/*     </div> */}
+        {/*     <div className="mt-10 text-center"> */}
+        {/*       <Link to="/courses"> */}
+        {/*         <Button size="lg" variant="outline"> */}
+        {/*           View all courses */}
+        {/*         </Button> */}
+        {/*       </Link> */}
+        {/*     </div> */}
+        {/*   </div> */}
+        {/* </section> */}
+        {/**/}
+        {/* {/* Recommended for You */} */}
+        {/* {user ? ( */}
+        {/*   <section className="py-16"> */}
+        {/*     <div className="container"> */}
+        {/*       <div className="flex items-center justify-between mb-8"> */}
+        {/*         <div className="flex items-center"> */}
+        {/*           <Award className="h-6 w-6 mr-2 text-primary" /> */}
+        {/*           <h2 className="text-3xl font-bold">Recommended for You</h2> */}
+        {/*         </div> */}
+        {/*       </div> */}
+        {/*       <div className="grid grid-cols-1 md:grid-cols-2 gap-6"> */}
+        {/*         {recommendedCourses.map((course) => ( */}
+        {/*           <Card */}
+        {/*             key={course.id} */}
+        {/*             className="overflow-hidden hover:shadow-lg transition-shadow" */}
+        {/*           > */}
+        {/*             <div className="flex"> */}
+        {/*               <div className="w-48 h-32"> */}
+        {/*                 <img */}
+        {/*                   src={course.thumbnail} */}
+        {/*                   alt={course.title} */}
+        {/*                   className="w-full h-full object-cover" */}
+        {/*                 /> */}
+        {/*               </div> */}
+        {/*               <CardContent className="flex-1 p-4"> */}
+        {/*                 <Badge variant="outline" className="mb-2 text-xs"> */}
+        {/*                   {course.matchReason} */}
+        {/*                 </Badge> */}
+        {/*                 <h3 className="font-semibold line-clamp-2 mb-2"> */}
+        {/*                   {course.title} */}
+        {/*                 </h3> */}
+        {/*                 <p className="text-sm text-muted-foreground mb-2"> */}
+        {/*                   By {course.instructor} */}
+        {/*                 </p> */}
+        {/*                 <p className="text-xs text-muted-foreground line-clamp-2 mb-3"> */}
+        {/*                   {course.description} */}
+        {/*                 </p> */}
+        {/*                 <div className="flex items-center justify-between"> */}
+        {/*                   <div className="flex items-center text-sm"> */}
+        {/*                     <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" /> */}
+        {/*                     <span className="font-medium mr-1"> */}
+        {/*                       {course.rating} */}
+        {/*                     </span> */}
+        {/*                     <span className="text-muted-foreground"> */}
+        {/*                       ({course.reviewCount.toLocaleString()}) */}
+        {/*                     </span> */}
+        {/*                   </div> */}
+        {/*                   <span className="font-bold">${course.price}</span> */}
+        {/*                 </div> */}
+        {/*               </CardContent> */}
+        {/*             </div> */}
+        {/*           </Card> */}
+        {/*         ))} */}
+        {/*       </div> */}
+        {/*     </div> */}
+        {/*   </section> */}
+        {/* ) : null} */}
 
         {/* Categories Section */}
         <section className="py-16 bg-muted/30">
