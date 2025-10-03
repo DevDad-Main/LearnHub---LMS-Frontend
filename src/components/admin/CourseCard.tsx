@@ -58,7 +58,10 @@ const CourseCard = ({
     <Card className="overflow-hidden h-full flex flex-col bg-white">
       <div className="relative h-48 overflow-hidden">
         <img
-          src={course?.thumbnail}
+          src={
+            course?.thumbnail ||
+            "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80"
+          }
           alt={course?.title}
           className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
         />
