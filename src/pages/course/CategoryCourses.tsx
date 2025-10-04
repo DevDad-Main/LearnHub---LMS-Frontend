@@ -115,7 +115,7 @@ const CategoryCourses = () => {
 
   const handleAddToCart = async (courseId: string) => {
     try {
-      const { data } = await axios.post(`/api/v1/cart/add`, { courseId });
+      const { data } = await axios.post(`/api/v1/users/cart/add`, { courseId });
       if (data.success) {
         toast({
           title: "Success",

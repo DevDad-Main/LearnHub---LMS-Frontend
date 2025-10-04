@@ -100,7 +100,7 @@ const InstructorProfilePage = () => {
 
   const handleAddToCart = async (courseId: string) => {
     try {
-      await axios.post(`/api/v1/cart/add`, { courseId });
+      await axios.post(`/api/v1/users/cart/add`, { courseId });
       toast({
         title: "Success",
         description: "Course added to cart successfully!",

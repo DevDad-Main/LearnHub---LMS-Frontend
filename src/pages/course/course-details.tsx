@@ -94,7 +94,9 @@ const CourseDetails = () => {
   const handleAddToCart = async (courseId: string) => {
     if (!courseId) return;
     try {
-      const { data } = await axios.post(`/api/v1/cart/add`, { courseId: id });
+      const { data } = await axios.post(`/api/v1/users/cart/add`, {
+        courseId: id,
+      });
       if (data.success) {
         toast({
           title: "Success",
@@ -214,7 +216,15 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  {!isEnrolled ? (
+                  {isEnrolled ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <Button asChild size="sm">
+                        <Link to={`/course/learn/${course._id}`}>
+                          Continue Watching
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
                     <>
                       <Button
                         onClick={() => handleAddToCart(id)}
@@ -237,17 +247,6 @@ const CourseDetails = () => {
                         30-Day Money-Back Guarantee
                       </p>
                     </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center">
-                      <Button asChild size="sm">
-                        <Link to={`/course/learn/${course._id}`}>
-                          Continue Watching
-                        </Link>
-                      </Button>
-                      <p className="mt-4 text-center text-sm text-muted-foreground">
-                        30-Day Money-Back Guarantee
-                      </p>
-                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -561,7 +560,16 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  {!isEnrolled ? (
+
+                  {isEnrolled ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <Button asChild size="sm">
+                        <Link to={`/course/learn/${course._id}`}>
+                          Continue Watching
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
                     <>
                       <Button
                         onClick={() => handleAddToCart(id)}
@@ -584,17 +592,6 @@ const CourseDetails = () => {
                         30-Day Money-Back Guarantee
                       </p>
                     </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center">
-                      <Button asChild size="sm">
-                        <Link to={`/course/learn/${course._id}`}>
-                          Continue Watching
-                        </Link>
-                      </Button>
-                      <p className="mt-4 text-center text-sm text-muted-foreground">
-                        30-Day Money-Back Guarantee
-                      </p>
-                    </div>
                   )}
 
                   <Separator className="my-4" />

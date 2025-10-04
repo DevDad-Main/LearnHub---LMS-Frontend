@@ -12,40 +12,80 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAppContext } from "../../context/AppContext";
+import { useToast } from "@/components/ui/use-toast";
 
-const Register = () => {
-  const { responseMessage } = useAppContext();
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    agreeToTerms: false,
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+// 🔹 Validation schema
+const registerSchema = z
+  .object({
+    firstName: z.string().min(2, "First name must be at least 2 characters"),
+    lastName: z.string().min(2, "Last name must be at least 2 characters"),
+    email: z.string().email("Please provide a valid email"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(
+        /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])/,
+        "Password must contain at least one number, one uppercase letter, one lowercase letter, and one special character",
+      ),
+    confirmPassword: z.string(),
+    agreeToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the Terms and Privacy Policy",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords must match",
+    path: ["confirmPassword"],
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle registration logic here
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords don't match!");
-      return;
+const Register = () => {
+  const { axios, navigate, responseMessage } = useAppContext();
+  const { toast } = useToast();
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+  });
+
+  const onSubmit = async (formData: RegisterFormData) => {
+    try {
+      const { data } = await axios.post("/api/v1/users/signup", formData);
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Account created successfully!",
+        });
+        navigate("/login");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.message || "Failed to create account",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to create account",
+      });
     }
-    console.log("Registration attempt:", formData);
   };
 
   return (
@@ -76,7 +116,7 @@ const Register = () => {
             </div>
 
             {/* Registration Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
@@ -84,27 +124,29 @@ const Register = () => {
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="firstName"
-                      name="firstName"
-                      type="text"
                       placeholder="John"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
                       className="pl-10"
-                      required
+                      {...register("firstName")}
                     />
                   </div>
+                  {errors.firstName && (
+                    <p className="text-red-500 text-sm">
+                      {errors.firstName.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    name="lastName"
-                    type="text"
                     placeholder="Doe"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    required
+                    {...register("lastName")}
                   />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm">
+                      {errors.lastName.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -114,15 +156,15 @@ const Register = () => {
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
-                    name="email"
                     type="email"
                     placeholder="john@example.com"
-                    value={formData.email}
-                    onChange={handleInputChange}
                     className="pl-10"
-                    required
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -131,13 +173,10 @@ const Register = () => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={handleInputChange}
                     className="pl-10 pr-10"
-                    required
+                    {...register("password")}
                   />
                   <Button
                     type="button"
@@ -153,6 +192,11 @@ const Register = () => {
                     )}
                   </Button>
                 </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -161,13 +205,10 @@ const Register = () => {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
-                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
                     className="pl-10 pr-10"
-                    required
+                    {...register("confirmPassword")}
                   />
                   <Button
                     type="button"
@@ -183,18 +224,18 @@ const Register = () => {
                     )}
                   </Button>
                 </div>
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">
-                <Checkbox
+                <input
+                  type="checkbox"
                   id="agreeToTerms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      agreeToTerms: checked as boolean,
-                    }))
-                  }
+                  {...register("agreeToTerms")}
                 />
                 <Label htmlFor="agreeToTerms" className="text-sm">
                   I agree to the{" "}
@@ -207,12 +248,13 @@ const Register = () => {
                   </Link>
                 </Label>
               </div>
+              {errors.agreeToTerms && (
+                <p className="text-red-500 text-sm">
+                  {errors.agreeToTerms.message}
+                </p>
+              )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={!formData.agreeToTerms}
-              >
+              <Button type="submit" className="w-full">
                 Create account
               </Button>
             </form>
