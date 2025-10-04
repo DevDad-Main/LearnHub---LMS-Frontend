@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,9 +31,11 @@ import { useAppContext } from "../../context/AppContext.jsx";
 
 const CourseDetails = () => {
   const { id } = useParams();
-  const { axios, navigate } = useAppContext();
+  const { axios, navigate, user } = useAppContext();
   const [course, setCourse] = useState(null);
   const [totalLectures, setTotalLectures] = useState(0);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const { toast } = useToast();
 
   function formatDuration(seconds) {
     if (!seconds) return "0m";
@@ -48,6 +52,15 @@ const CourseDetails = () => {
       return `${minutes}m`;
     }
   }
+
+  useEffect(() => {
+    if (user.enrolledCourses?.length && course?._id) {
+      const enrolled = user.enrolledCourses.some(
+        (c) => c.course._id === course._id,
+      );
+      setIsEnrolled(enrolled);
+    }
+  }, [user, course]);
 
   useEffect(() => {
     if (!id) return;
@@ -77,6 +90,31 @@ const CourseDetails = () => {
   if (!course) {
     return <div className="p-6 text-center">Loading course...</div>;
   }
+
+  const handleAddToCart = async (courseId: string) => {
+    if (!courseId) return;
+    try {
+      const { data } = await axios.post(`/api/v1/cart/add`, { courseId: id });
+      if (data.success) {
+        toast({
+          title: "Success",
+          description: "Course added to cart!",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: data.response?.data?.message || "Failed to load course",
+        });
+      }
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.response?.data?.message || "Failed to add to cart",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -176,15 +214,41 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  <Button className="w-full mb-3" size="lg">
-                    Add to cart
-                  </Button>
-                  <Button variant="outline" className="w-full mb-4">
-                    Buy now
-                  </Button>
-                  <p className="text-center text-sm text-muted-foreground">
-                    30-Day Money-Back Guarantee
-                  </p>
+                  {isEnrolled ? (
+                    <>
+                      <Button
+                        onClick={() => handleAddToCart(id)}
+                        className="w-full mb-3"
+                        size="lg"
+                      >
+                        Add to cart
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          handleAddToCart(id);
+                          navigate("/cart");
+                        }}
+                        variant="outline"
+                        className="w-full mb-4"
+                      >
+                        Buy now
+                      </Button>
+                      <p className="text-center text-sm text-muted-foreground">
+                        30-Day Money-Back Guarantee
+                      </p>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <Button asChild size="sm">
+                        <Link to={`/course/learn/${course._id}`}>
+                          Continue Watching
+                        </Link>
+                      </Button>
+                      <p className="mt-4 text-center text-sm text-muted-foreground">
+                        30-Day Money-Back Guarantee
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -497,15 +561,41 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  <Button className="w-full mb-3" size="lg">
-                    Add to cart
-                  </Button>
-                  <Button variant="outline" className="w-full mb-4">
-                    Buy now
-                  </Button>
-                  <p className="text-center text-sm text-muted-foreground mb-4">
-                    30-Day Money-Back Guarantee
-                  </p>
+                  {isEnrolled ? (
+                    <>
+                      <Button
+                        onClick={() => handleAddToCart(id)}
+                        className="w-full mb-3"
+                        size="lg"
+                      >
+                        Add to cart
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          handleAddToCart(id);
+                          navigate("/cart");
+                        }}
+                        variant="outline"
+                        className="w-full mb-4"
+                      >
+                        Buy now
+                      </Button>
+                      <p className="text-center text-sm text-muted-foreground">
+                        30-Day Money-Back Guarantee
+                      </p>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <Button asChild size="sm">
+                        <Link to={`/course/learn/${course._id}`}>
+                          Continue Watching
+                        </Link>
+                      </Button>
+                      <p className="mt-4 text-center text-sm text-muted-foreground">
+                        30-Day Money-Back Guarantee
+                      </p>
+                    </div>
+                  )}
 
                   <Separator className="my-4" />
 

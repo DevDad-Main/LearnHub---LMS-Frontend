@@ -397,30 +397,30 @@ const Dashboard = () => {
       {/*   </div> */}
       {/* </div> */}
 
-      {/* Recommended Courses */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Recommended For You</h2>
-          <Button variant="link" asChild>
-            <Link to="/">View All</Link>
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recommendedCourses.map((course) => (
-            <CourseCard
-              key={course.id}
-              id={course.id}
-              title={course.title}
-              instructor={course.instructor}
-              thumbnail={course.thumbnail}
-              rating={course.rating}
-              price={course.price}
-              category={course.category}
-              description={course.description}
-            />
-          ))}
-        </div>
-      </div>
+      {/* {/* Recommended Courses */}
+      {/* <div className="mb-8"> */}
+      {/*   <div className="flex justify-between items-center mb-4"> */}
+      {/*     <h2 className="text-2xl font-bold">Recommended For You</h2> */}
+      {/*     <Button variant="link" asChild> */}
+      {/*       <Link to="/">View All</Link> */}
+      {/*     </Button> */}
+      {/*   </div> */}
+      {/*   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> */}
+      {/*     {recommendedCourses.map((course) => ( */}
+      {/*       <CourseCard */}
+      {/*         key={course.id} */}
+      {/*         id={course.id} */}
+      {/*         title={course.title} */}
+      {/*         instructor={course.instructor} */}
+      {/*         thumbnail={course.thumbnail} */}
+      {/*         rating={course.rating} */}
+      {/*         price={course.price} */}
+      {/*         category={course.category} */}
+      {/*         description={course.description} */}
+      {/*       /> */}
+      {/*     ))} */}
+      {/*   </div> */}
+      {/* </div> */}
     </div>
   );
 };
