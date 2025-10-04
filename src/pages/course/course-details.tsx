@@ -54,15 +54,6 @@ const CourseDetails = () => {
   }
 
   useEffect(() => {
-    if (user.enrolledCourses?.length && course?._id) {
-      const enrolled = user.enrolledCourses.some(
-        (c) => c.course._id === course._id,
-      );
-      setIsEnrolled(enrolled);
-    }
-  }, [user, course]);
-
-  useEffect(() => {
     if (!id) return;
 
     const fetchCourseById = async () => {
@@ -77,6 +68,12 @@ const CourseDetails = () => {
               return previous + current.lectures.length;
             }, 0),
           );
+
+          if (user?.enrolledCourses) {
+            setIsEnrolled(
+              user.enrolledCourses.some((c) => c.course === data.course?._id),
+            );
+          }
         } else {
           console.error(data.message);
         }
