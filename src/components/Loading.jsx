@@ -3,7 +3,7 @@ import { useAppContext } from "../context/AppContext";
 import { useLocation } from "react-router-dom";
 
 const Loading = () => {
-  const { navigate, axios } = useAppContext();
+  const { navigate, axios, setCart } = useAppContext();
   const { search } = useLocation();
   const query = new URLSearchParams(search);
 
@@ -23,6 +23,7 @@ const Loading = () => {
 
         if (data.success) {
           setStatus("Payment successful! Redirecting...");
+          setCart([]);
           setTimeout(() => navigate(`/${nextUrl || ""}`), 3000);
           // clearCart();
         } else {
@@ -39,9 +40,10 @@ const Loading = () => {
   }, [sessionId, nextUrl, navigate]);
   return (
     <div className="flex flex-col justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-24 w-24 border-4 border-gray-300 border-t-primary"></div>
       <p className="mt-4 text-lg">{status}</p>
     </div>
+    // {/*   <div className="animate-spin rounded-full h-24 w-24 border-4 border-gray-300 border-t-primary"></div> */}
+    // {/* </div> */}
   );
 };
 

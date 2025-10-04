@@ -75,6 +75,7 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [coursesProgress, setCoursesProgress] = useState([]);
+  const [totalTimeLearning, setTotalTimeLearning] = useState(0);
   const { axios, user } = useAppContext();
 
   const fetchUserDashboard = async () => {
@@ -82,10 +83,9 @@ const Dashboard = () => {
       const { data } = await axios.get("/api/v1/users/dashboard");
 
       if (data.success) {
-        console.log("Dashboard data:", data);
-        console.log(data.courseProgresses);
         setEnrolledCourses(data.user.enrolledCourses || []);
         setCoursesProgress(data.courseProgress || []);
+        setTotalTimeLearning(data.totalTimeLearning);
       } else {
         toast({
           variant: "destructive",
@@ -102,6 +102,22 @@ const Dashboard = () => {
       });
     }
   };
+
+  function formatDuration(seconds?: number) {
+    if (!seconds) return "0m";
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours} hours ${minutes} minutes`;
+    } else {
+      if (minutes === 0 && seconds > 0) {
+        return "1m"; // anything less than a minute rounds up
+      }
+      return `${minutes} minutes`;
+    }
+  }
 
   // Merge courses with their progress
   const mergedCourses = enrolledCourses.map((enrolled) => {
@@ -149,9 +165,11 @@ const Dashboard = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Hours Learned</p>
+                <p className="text-sm text-muted-foreground">
+                  Time Spent Learning
+                </p>
                 <h3 className="text-2xl font-bold">
-                  {learningStats.totalHours}
+                  {formatDuration(totalTimeLearning)}
                 </h3>
               </div>
               <Clock className="h-8 w-8 text-primary opacity-80" />
@@ -167,7 +185,12 @@ const Dashboard = () => {
                   Courses Completed
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {learningStats.coursesCompleted}
+                  {mergedCourses
+                    .filter((course) => course.progress?.isCompleted)
+                    .reduce(
+                      (acc, course) => acc + course.progress?.isCompleted,
+                      0,
+                    )}
                 </h3>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500 opacity-80" />
@@ -183,7 +206,13 @@ const Dashboard = () => {
                   Certificates Earned
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {learningStats.certificatesEarned}
+                  {mergedCourses
+                    .filter((course) => course.progress?.isCompleted)
+                    .reduce(
+                      (acc, course) => acc + course.progress?.isCompleted,
+                      0,
+                    )}
+                  {/* {learningStats.certificatesEarned} */}
                 </h3>
               </div>
               <BookmarkIcon className="h-8 w-8 text-blue-500 opacity-80" />
@@ -191,19 +220,20 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Current Streak</p>
-                <h3 className="text-2xl font-bold">
-                  {learningStats.currentStreak} days
-                </h3>
-              </div>
-              <BarChart2 className="h-8 w-8 text-orange-500 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
+        {/* // TODO: Add current streak */}
+        {/* <Card> */}
+        {/*   <CardContent className="pt-6"> */}
+        {/*     <div className="flex items-center justify-between"> */}
+        {/*       <div> */}
+        {/*         <p className="text-sm text-muted-foreground">Current Streak</p> */}
+        {/*         <h3 className="text-2xl font-bold"> */}
+        {/*           {learningStats.currentStreak} days */}
+        {/*         </h3> */}
+        {/*       </div> */}
+        {/*       <BarChart2 className="h-8 w-8 text-orange-500 opacity-80" /> */}
+        {/*     </div> */}
+        {/*   </CardContent> */}
+        {/* </Card> */}
       </div>
 
       {/* Tabs */}

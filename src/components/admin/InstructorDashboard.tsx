@@ -48,8 +48,7 @@ const InstructorDashboard = () => {
   // }, []);
 
   useEffect(() => {
-    if (!instructor) return;
-
+    // if (!instructor) return;
     fetchInstructorsCourses();
   }, [instructor]);
 

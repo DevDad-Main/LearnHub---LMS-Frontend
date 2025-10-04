@@ -237,9 +237,9 @@ export const AppContextProvider = ({ children }) => {
   //   console.log("Backend URL:", import.meta.env.VITE_BACKEND_URL);
   // }, []);
 
-  // useEffect(() => {
-  //   fetchUser();
-  // }, []);
+  useEffect(() => {
+    fetchInstructor();
+  }, []);
 
   // useEffect(() => {
   //   fetchUser();1
