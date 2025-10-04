@@ -22,6 +22,7 @@ import {
   Users,
   ShoppingCart,
   Eye,
+  Play,
   Loader2,
   ArrowLeft,
 } from "lucide-react";
@@ -51,7 +52,7 @@ const difficultyLevels = ["Beginner", "Intermediate", "Advanced"];
 
 const CategoryCourses = () => {
   const { category } = useParams<{ category: string }>();
-  const { axios } = useAppContext();
+  const { axios, user } = useAppContext();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -228,12 +229,22 @@ const CategoryCourses = () => {
               <Eye className="h-4 w-4 mr-2" />
               View Course
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleAddToCart(course._id)}
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </Button>
+            {user &&
+            user.enrolledCourses?.some((c) => c.course === course._id) ? (
+              <Button
+                variant="outline"
+                onClick={() => navigate("/course/learn/" + course._id)}
+              >
+                <Play className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={() => handleAddToCart(course._id)}
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardContent>
       </div>
