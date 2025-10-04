@@ -214,7 +214,7 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  {isEnrolled ? (
+                  {!isEnrolled ? (
                     <>
                       <Button
                         onClick={() => handleAddToCart(id)}
@@ -561,7 +561,7 @@ const CourseDetails = () => {
                     </div>
                     <Badge variant="destructive">67% off</Badge>
                   </div>
-                  {isEnrolled ? (
+                  {!isEnrolled ? (
                     <>
                       <Button
                         onClick={() => handleAddToCart(id)}

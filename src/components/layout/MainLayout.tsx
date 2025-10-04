@@ -187,84 +187,84 @@ const MainLayout = () => {
                 </Button>
               </div>
             )}
-            {/* Mobile Menu */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                <div className="flex flex-col space-y-4 py-4">
-                  <SheetClose asChild>
-                    <Link to="/" className="flex items-center space-x-2">
-                      <div className="h-8 w-8 rounded-full bg-primary"></div>
-                      <span className="text-xl font-bold">LearnHub</span>
-                    </Link>
-                  </SheetClose>
-
-                  {/* Mobile Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
-                    <input
-                      type="text"
-                      placeholder="Search for courses..."
-                      className="h-9 w-full rounded-md border border-input bg-background pl-10 pr-4 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    />
-                  </div>
-
-                  {/* Mobile Navigation Links */}
-                  <div className="flex flex-col space-y-2">
-                    <SheetClose asChild>
-                      <Link
-                        to="/courses"
-                        className="rounded-md px-4 py-2 text-sm hover:bg-accent"
-                      >
-                        All Courses
-                      </Link>
-                    </SheetClose>
-                    <div className="px-4 py-2 text-sm font-medium">
-                      Categories
-                    </div>
-                    {categories.map((category) => (
-                      <SheetClose key={category.name} asChild>
-                        <Link
-                          to={category.href}
-                          className="rounded-md px-6 py-2 text-sm hover:bg-accent"
-                        >
-                          {category.name}
-                        </Link>
-                      </SheetClose>
-                    ))}
-                  </div>
-
-                  {/* Mobile Auth Buttons */}
-                  {!user && (
-                    <div className="mt-4 flex flex-col space-y-2">
-                      <SheetClose asChild>
-                        <Button variant="outline" asChild className="w-full">
-                          <Link to="/login">Log in</Link>
-                        </Button>
-                      </SheetClose>
-                      <SheetClose asChild>
-                        <Button asChild className="w-full">
-                          <Link to="/register">Sign up</Link>
-                        </Button>
-                      </SheetClose>
-                    </div>
-                  )}
-
-                  {/* Mobile Dashboard Link when authenticated */}
-                  {user && (
-                    <SheetClose asChild>
-                      <Button variant="outline" asChild className="w-full">
-                        <Link to="/dashboard">My Dashboard</Link>
-                      </Button>
-                    </SheetClose>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+            {/* {/* Mobile Menu */}
+            {/* <Sheet> */}
+            {/*   <SheetTrigger asChild> */}
+            {/*     <Button variant="ghost" size="icon" className="md:hidden"> */}
+            {/*       <Menu className="h-5 w-5" /> */}
+            {/*     </Button> */}
+            {/*   </SheetTrigger> */}
+            {/*   <SheetContent side="right"> */}
+            {/*     <div className="flex flex-col space-y-4 py-4"> */}
+            {/*       <SheetClose asChild> */}
+            {/*         <Link to="/" className="flex items-center space-x-2"> */}
+            {/*           <div className="h-8 w-8 rounded-full bg-primary"></div> */}
+            {/*           <span className="text-xl font-bold">LearnHub</span> */}
+            {/*         </Link> */}
+            {/*       </SheetClose> */}
+            {/**/}
+            {/*       {/* Mobile Search */}
+            {/*       <div className="relative"> */}
+            {/*         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" /> */}
+            {/*         <input */}
+            {/*           type="text" */}
+            {/*           placeholder="Search for courses..." */}
+            {/*           className="h-9 w-full rounded-md border border-input bg-background pl-10 pr-4 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" */}
+            {/*         /> */}
+            {/*       </div> */}
+            {/**/}
+            {/*       {/* Mobile Navigation Links */}
+            {/*       <div className="flex flex-col space-y-2"> */}
+            {/*         <SheetClose asChild> */}
+            {/*           <Link */}
+            {/*             to="/courses" */}
+            {/*             className="rounded-md px-4 py-2 text-sm hover:bg-accent" */}
+            {/*           > */}
+            {/*             All Courses */}
+            {/*           </Link> */}
+            {/*         </SheetClose> */}
+            {/*         <div className="px-4 py-2 text-sm font-medium"> */}
+            {/*           Categories */}
+            {/*         </div> */}
+            {/*         {categories.map((category) => ( */}
+            {/*           <SheetClose key={category.name} asChild> */}
+            {/*             <Link */}
+            {/*               to={category.href} */}
+            {/*               className="rounded-md px-6 py-2 text-sm hover:bg-accent" */}
+            {/*             > */}
+            {/*               {category.name} */}
+            {/*             </Link> */}
+            {/*           </SheetClose> */}
+            {/*         ))} */}
+            {/*       </div> */}
+            {/**/}
+            {/*       {/* Mobile Auth Buttons */}
+            {/*       {!user && ( */}
+            {/*         <div className="mt-4 flex flex-col space-y-2"> */}
+            {/*           <SheetClose asChild> */}
+            {/*             <Button variant="outline" asChild className="w-full"> */}
+            {/*               <Link to="/login">Log in</Link> */}
+            {/*             </Button> */}
+            {/*           </SheetClose> */}
+            {/*           <SheetClose asChild> */}
+            {/*             <Button asChild className="w-full"> */}
+            {/*               <Link to="/register">Sign up</Link> */}
+            {/*             </Button> */}
+            {/*           </SheetClose> */}
+            {/*         </div> */}
+            {/*       )} */}
+            {/**/}
+            {/*       {/* Mobile Dashboard Link when authenticated */}
+            {/*       {user && ( */}
+            {/*         <SheetClose asChild> */}
+            {/*           <Button variant="outline" asChild className="w-full"> */}
+            {/*             <Link to="/dashboard">My Dashboard</Link> */}
+            {/*           </Button> */}
+            {/*         </SheetClose> */}
+            {/*       )} */}
+            {/*     </div> */}
+            {/*   </SheetContent> */}
+            {/* </Sheet> */}
           </div>
         </div>
       </header>

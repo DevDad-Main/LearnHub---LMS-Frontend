@@ -52,7 +52,7 @@ function CourseVideoPlayerPage() {
   const { toast } = useToast();
   const videoPlayerRef = useRef<VideoPlayerHandle>(null);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentLectureId, setCurrentLectureId] = useState<string | null>(null);
   const [course, setCourse] = useState<Course | null>(null);
   const [courseProgress, setCourseProgress] = useState(null);
