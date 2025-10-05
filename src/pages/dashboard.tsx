@@ -12,16 +12,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  BookOpen,
-  Clock,
-  CheckCircle,
-  BookmarkIcon,
-  BarChart2,
-} from "lucide-react";
+import { BookOpen, Clock, CheckCircle, BookmarkIcon } from "lucide-react";
 import { useAppContext } from "../context/AppContext.jsx";
 
 // Local CourseCard for Recommended Courses
@@ -63,14 +56,6 @@ const CourseCard = ({
 );
 
 const Dashboard = () => {
-  const learningStats = {
-    totalHours: 42,
-    coursesCompleted: 3,
-    certificatesEarned: 2,
-    currentStreak: 5,
-  };
-
-  const recommendedCourses = [];
   const location = useLocation();
   const { toast } = useToast();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
@@ -103,7 +88,7 @@ const Dashboard = () => {
     }
   };
 
-  function formatDuration(seconds?: number) {
+  function formatDuration(seconds) {
     if (!seconds) return "0m";
 
     const hours = Math.floor(seconds / 3600);
@@ -113,7 +98,7 @@ const Dashboard = () => {
       return `${hours} hours ${minutes} minutes`;
     } else {
       if (minutes === 0 && seconds > 0) {
-        return "1m"; // anything less than a minute rounds up
+        return "1m";
       }
       return `${minutes} minutes`;
     }
@@ -130,14 +115,6 @@ const Dashboard = () => {
 
     return { ...enrolled, progress, totalLectures };
   });
-
-  const getCourseProgress = (courseProgress) => {
-    const allLectures = courseProgress.course.sections.flatMap(
-      (s) => s.lectures || [],
-    );
-    const completedCount = courseProgress.completedLectures?.length || 0;
-    return Math.round((completedCount / allLectures.length) * 100);
-  };
 
   useEffect(() => {
     fetchUserDashboard();
@@ -185,12 +162,7 @@ const Dashboard = () => {
                   Courses Completed
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {mergedCourses
-                    .filter((course) => course.progress?.isCompleted)
-                    .reduce(
-                      (acc, course) => acc + course.progress?.isCompleted,
-                      0,
-                    )}
+                  {mergedCourses.filter((c) => c.progress?.isCompleted).length}
                 </h3>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500 opacity-80" />
@@ -206,34 +178,13 @@ const Dashboard = () => {
                   Certificates Earned
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {mergedCourses
-                    .filter((course) => course.progress?.isCompleted)
-                    .reduce(
-                      (acc, course) => acc + course.progress?.isCompleted,
-                      0,
-                    )}
-                  {/* {learningStats.certificatesEarned} */}
+                  {mergedCourses.filter((c) => c.progress?.isCompleted).length}
                 </h3>
               </div>
               <BookmarkIcon className="h-8 w-8 text-blue-500 opacity-80" />
             </div>
           </CardContent>
         </Card>
-
-        {/* // TODO: Add current streak */}
-        {/* <Card> */}
-        {/*   <CardContent className="pt-6"> */}
-        {/*     <div className="flex items-center justify-between"> */}
-        {/*       <div> */}
-        {/*         <p className="text-sm text-muted-foreground">Current Streak</p> */}
-        {/*         <h3 className="text-2xl font-bold"> */}
-        {/*           {learningStats.currentStreak} days */}
-        {/*         </h3> */}
-        {/*       </div> */}
-        {/*       <BarChart2 className="h-8 w-8 text-orange-500 opacity-80" /> */}
-        {/*     </div> */}
-        {/*   </CardContent> */}
-        {/* </Card> */}
       </div>
 
       {/* Tabs */}
@@ -247,18 +198,105 @@ const Dashboard = () => {
         {/* In Progress */}
         <TabsContent value="in-progress">
           <h3 className="text-2xl font-bold mb-3">Continue Learning</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mergedCourses
-              .filter((course) => !course.progress?.isCompleted)
-              .slice(0, 6)
-              .map((course) => {
-                const completedCount =
-                  course.progress?.completedLectures?.length || 0;
-                const progressPercent = course.progress
-                  ? Math.round((completedCount / course.totalLectures) * 100)
-                  : 0;
+          {mergedCourses.filter((c) => !c.progress?.isCompleted).length ===
+          0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-medium mb-2">
+                No courses in progress
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Start learning a course to see it here
+              </p>
+              <Button variant="outline" asChild>
+                <Link to="/">Browse Courses</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mergedCourses
+                .filter((c) => !c.progress?.isCompleted)
+                .slice(0, 6)
+                .map((course) => {
+                  const completedCount =
+                    course.progress?.completedLectures?.length || 0;
+                  const progressPercent = course.progress
+                    ? Math.round((completedCount / course.totalLectures) * 100)
+                    : 0;
 
-                return (
+                  return (
+                    <Card key={course.course._id} className="overflow-hidden">
+                      <div className="relative h-48 w-full">
+                        <img
+                          src={course.course?.thumbnail}
+                          alt={course.course?.title}
+                          className="h-full w-full object-cover"
+                        />
+                        <Badge className="absolute top-2 right-2">
+                          {course.course?.category}
+                        </Badge>
+                      </div>
+                      <CardHeader>
+                        <CardTitle className="line-clamp-2">
+                          {course.course?.title}
+                        </CardTitle>
+                        <CardDescription>
+                          Instructor: {course.course?.instructor?.name}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="mb-2">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Progress: {progressPercent}%</span>
+                            <span>
+                              {completedCount}/{course.totalLectures} lectures
+                            </span>
+                          </div>
+                          <Progress value={progressPercent} className="h-2" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Last accessed:{" "}
+                          {course.progress?.lastAccessed
+                            ? new Date(
+                                course.progress?.lastAccessed,
+                              ).toLocaleDateString()
+                            : "Never"}
+                        </p>
+                      </CardContent>
+                      <CardFooter>
+                        <Button asChild className="w-full">
+                          <Link to={`/course/learn/${course.course._id}`}>
+                            Continue Learning
+                          </Link>
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  );
+                })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Completed */}
+        <TabsContent value="completed">
+          {mergedCourses.filter((c) => c.progress?.isCompleted).length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <CheckCircle className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-xl font-medium mb-2">
+                No completed courses yet
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Finish a course to see it here
+              </p>
+              <Button variant="outline" asChild>
+                <Link to="/">Browse Courses</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mergedCourses
+                .filter((c) => c.progress?.isCompleted)
+                .map((course) => (
                   <Card key={course.course._id} className="overflow-hidden">
                     <div className="relative h-48 w-full">
                       <img
@@ -266,9 +304,14 @@ const Dashboard = () => {
                         alt={course.course?.title}
                         className="h-full w-full object-cover"
                       />
-                      <Badge className="absolute top-2 right-2">
-                        {course.course?.category}
-                      </Badge>
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <Badge
+                          variant="secondary"
+                          className="text-lg font-semibold px-4 py-2"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" /> Completed
+                        </Badge>
+                      </div>
                     </div>
                     <CardHeader>
                       <CardTitle className="line-clamp-2">
@@ -279,82 +322,21 @@ const Dashboard = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="mb-2">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Progress: {progressPercent}%</span>
-                          <span>
-                            {completedCount}/{course.totalLectures} lectures
-                          </span>
-                        </div>
-                        <Progress value={progressPercent} className="h-2" />
-                      </div>
                       <p className="text-sm text-muted-foreground">
-                        Last accessed:{" "}
-                        {course.progress?.lastAccessed
-                          ? new Date(
-                              course.progress?.lastAccessed,
-                            ).toLocaleDateString()
-                          : "Never"}
+                        Completed all {course.totalLectures} lectures
                       </p>
                     </CardContent>
                     <CardFooter>
-                      <Button asChild className="w-full">
-                        <Link to={`/course/learn/${course.course._id}`}>
-                          Continue Learning
+                      <Button asChild variant="outline" className="w-full">
+                        <Link to={`/course/${course.course._id}`}>
+                          Review Course
                         </Link>
                       </Button>
                     </CardFooter>
                   </Card>
-                );
-              })}
-          </div>
-        </TabsContent>
-
-        {/* Completed */}
-        <TabsContent value="completed">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {mergedCourses
-              .filter((course) => course.progress?.isCompleted)
-              .map((course) => (
-                <Card key={course.course._id} className="overflow-hidden">
-                  <div className="relative h-48 w-full">
-                    <img
-                      src={course.course?.thumbnail}
-                      alt={course.course?.title}
-                      className="h-full w-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                      <Badge
-                        variant="secondary"
-                        className="text-lg font-semibold px-4 py-2"
-                      >
-                        <CheckCircle className="mr-2 h-4 w-4" /> Completed
-                      </Badge>
-                    </div>
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="line-clamp-2">
-                      {course.course?.title}
-                    </CardTitle>
-                    <CardDescription>
-                      Instructor: {course.course?.instructor?.name}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">
-                      Completed all {course.totalLectures} lectures
-                    </p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button asChild variant="outline" className="w-full">
-                      <Link to={`/course/${course.course._id}`}>
-                        Review Course
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-          </div>
+                ))}
+            </div>
+          )}
         </TabsContent>
 
         {/* Saved */}
@@ -371,56 +353,6 @@ const Dashboard = () => {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Enrolled Courses */}
-      {/* <div className="mb-8"> */}
-      {/*   <div className="flex justify-between items-center mb-4"> */}
-      {/*     <h2 className="text-2xl font-bold">Enrolled Courses</h2> */}
-      {/*     <Button variant="link" asChild> */}
-      {/*       <Link to="/">View All</Link> */}
-      {/*     </Button> */}
-      {/*   </div> */}
-      {/*   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> */}
-      {/*     {enrolledCourses.map((course) => ( */}
-      {/*       <CourseCard */}
-      {/*         key={course.course?._id} */}
-      {/*         id={course.course?._id} */}
-      {/*         title={course.course?.title} */}
-      {/*         instructor={course.course?.instructor?.name} */}
-      {/*         thumbnail={course.course?.thumbnail} */}
-      {/*         rating={course.rating} */}
-      {/*         price={course.course?.price} */}
-      {/*         category={course.course?.category} */}
-      {/*         description={course.course?.description} */}
-      {/*       /> */}
-      {/*     ))} */}
-      {/*   </div> */}
-      {/* </div> */}
-
-      {/* {/* Recommended Courses */}
-      {/* <div className="mb-8"> */}
-      {/*   <div className="flex justify-between items-center mb-4"> */}
-      {/*     <h2 className="text-2xl font-bold">Recommended For You</h2> */}
-      {/*     <Button variant="link" asChild> */}
-      {/*       <Link to="/">View All</Link> */}
-      {/*     </Button> */}
-      {/*   </div> */}
-      {/*   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"> */}
-      {/*     {recommendedCourses.map((course) => ( */}
-      {/*       <CourseCard */}
-      {/*         key={course.id} */}
-      {/*         id={course.id} */}
-      {/*         title={course.title} */}
-      {/*         instructor={course.instructor} */}
-      {/*         thumbnail={course.thumbnail} */}
-      {/*         rating={course.rating} */}
-      {/*         price={course.price} */}
-      {/*         category={course.category} */}
-      {/*         description={course.description} */}
-      {/*       /> */}
-      {/*     ))} */}
-      {/*   </div> */}
-      {/* </div> */}
     </div>
   );
 };
