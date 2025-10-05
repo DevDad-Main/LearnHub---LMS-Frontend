@@ -113,15 +113,19 @@ const Home = () => {
           <section className="py-8 bg-muted/20">
             <div className="container">
               <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center">
-                  <Clock className="h-6 w-6 mr-2 text-primary" />
-                  <h2 className="text-3xl font-bold">Continue Learning</h2>
-                </div>
-                <Link to="/my-learning">
-                  <Button variant="ghost" className="text-primary">
-                    View all <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </Link>
+                {coursesProgress.filter((c) => c.isCompleted).length > 0 && (
+                  <>
+                    <div className="flex items-center">
+                      <Clock className="h-6 w-6 mr-2 text-primary" />
+                      <h2 className="text-3xl font-bold">Continue Learning</h2>
+                    </div>
+                    <Link to="/my-learning">
+                      <Button variant="ghost" className="text-primary">
+                        View all <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
