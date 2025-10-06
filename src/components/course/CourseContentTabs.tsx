@@ -28,7 +28,7 @@ const CourseContentTabs = ({
   getCurrentTime,
 }: CourseContentTabsProps) => {
   const { toast } = useToast();
-  const { axios } = useAppContext();
+  const { axios, navigate } = useAppContext();
   const [activeTab, setActiveTab] = useState("content");
   const [newQuestion, setNewQuestion] = useState("");
   const [newNote, setNewNote] = useState("");
@@ -435,7 +435,9 @@ const CourseContentTabs = ({
                       </div>
                     </div>
                     <Button variant="ghost" size="icon">
-                      <Download className="h-4 w-4" />
+                      <a href="https://github.com/DevDad-Main/LMS-Backend">
+                        <Download className="h-4 w-4" />
+                      </a>
                     </Button>
                   </div>
                 ))}

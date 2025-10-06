@@ -16,14 +16,19 @@ import {
 import { useAppContext } from "../context/AppContext.jsx";
 
 const categories = [
-  { id: 1, name: "Web Development" },
-  { id: 2, name: "Mobile Development" },
-  { id: 3, name: "Data Science" },
-  { id: 4, name: "Machine Learning" },
-  { id: 5, name: "Business" },
-  { id: 6, name: "Marketing" },
-  { id: 7, name: "Design" },
-  { id: 8, name: "Photography" },
+  { id: "Web Development", name: "Web Development" },
+  { id: "Mobile Development", name: "Mobile Development" },
+  { id: "Data Science", name: "Data Science" },
+  { id: "Machine Learning", name: "Machine Learning" },
+  { id: "Business", name: "Business" },
+  { id: "Marketing", name: "Marketing" },
+  { id: "Design", name: "Design" },
+  { id: "Photography", name: "Photography" },
+  // { id: 4, name: "Machine Learning" },
+  // { id: 5, name: "Business" },
+  // { id: 6, name: "Marketing" },
+  // { id: 7, name: "Design" },
+  // { id: 8, name: "Photography" },
 ];
 
 // Example featured courses (same as before)
@@ -231,7 +236,7 @@ const Home = () => {
               </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredCourses.map((course) => (
+              {featuredCourses.slice(0, 4).map((course) => (
                 <CourseCard key={course.id} course={course} />
               ))}
             </div>
@@ -519,11 +524,19 @@ const Home = () => {
               Join thousands of students already learning on LearnHub. Get
               unlimited access to all courses.
             </p>
-            <Link to="/register">
-              <Button size="lg" variant="secondary">
-                Sign up for free
-              </Button>
-            </Link>
+            {!user ? (
+              <Link to="/register">
+                <Button size="lg" variant="secondary">
+                  Sign up for free
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/dashboard">
+                <Button size="lg" variant="secondary">
+                  Continue Learning
+                </Button>
+              </Link>
+            )}
           </div>
         </section>
       </main>
