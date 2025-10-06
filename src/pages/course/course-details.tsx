@@ -31,7 +31,7 @@ import { useAppContext } from "../../context/AppContext.jsx";
 
 const CourseDetails = () => {
   const { id } = useParams();
-  const { axios, navigate, user } = useAppContext();
+  const { axios, navigate, user, getCartItems } = useAppContext();
   const [course, setCourse] = useState(null);
   const [totalLectures, setTotalLectures] = useState(0);
   const [isEnrolled, setIsEnrolled] = useState(false);
@@ -90,6 +90,12 @@ const CourseDetails = () => {
 
   const handleAddToCart = async (courseId: string) => {
     if (!courseId) return;
+    if (!user) {
+      // no user, redirect to login
+      navigate("/login");
+      return;
+    }
+
     try {
       const { data } = await axios.post(`/api/v1/users/cart/add`, {
         courseId: id,
@@ -99,6 +105,7 @@ const CourseDetails = () => {
           title: "Success",
           description: "Course added to cart!",
         });
+        await getCartItems();
       } else {
         toast({
           variant: "destructive",
@@ -160,11 +167,22 @@ const CourseDetails = () => {
               {/* Instructor */}
               <div className="flex items-center mb-6">
                 <Avatar className="h-12 w-12 mr-4">
-                  <AvatarImage src={course?.instructor?.avatar} />
+                  <AvatarImage
+                    className="cursor-pointer"
+                    onClick={() =>
+                      navigate(`/instructor/${course?.instructor?._id}`)
+                    }
+                    src={course?.instructor?.avatar}
+                  />
                   <AvatarFallback>JS</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-semibold">
+                  <p
+                    className="font-semibold cursor-pointer"
+                    onClick={() =>
+                      navigate(`/instructor/${course?.instructor?._id}`)
+                    }
+                  >
                     Created by {course?.instructor?.name}
                   </p>
                   <p className="text-slate-300 text-sm">
