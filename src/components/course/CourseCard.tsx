@@ -45,7 +45,7 @@ interface CourseCardProps {
 
 const CourseCard = ({ course }: CourseCardProps) => {
   const { toast } = useToast();
-  const { navigate, studentCourses, getCartItems } = useAppContext();
+  const { navigate, studentCourses, getCartItems, user } = useAppContext();
 
   function formatDuration(seconds?: number) {
     if (!seconds) return "0m";
@@ -64,6 +64,12 @@ const CourseCard = ({ course }: CourseCardProps) => {
   }
 
   async function handleAddToCart() {
+    if (!user) {
+      // no user, redirect to login
+      navigate("/login");
+      return;
+    }
+
     try {
       const { data } = await axios.post("/api/v1/users/cart/add", {
         courseId: course._id,
@@ -82,8 +88,7 @@ const CourseCard = ({ course }: CourseCardProps) => {
           description: data.response?.data?.message || "Failed to load course",
         });
       }
-      // you could fire a toast/notification here
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding to cart:", error);
       toast({
         variant: "destructive",

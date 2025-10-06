@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Search, Menu, X, User, ShoppingCart, LogIn } from "lucide-react";
+import {
+  Search,
+  Menu,
+  X,
+  User,
+  ShoppingCart,
+  LogIn,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -144,11 +152,13 @@ const MainLayout = () => {
             ) : null}
 
             <div className="relative">
-              <Button variant="ghost" size="icon" asChild>
-                <Link to="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </Button>
+              {user ? (
+                <Button variant="ghost" size="icon" asChild>
+                  <Link to="/cart">
+                    <ShoppingCart className="h-5 w-5" />
+                  </Link>
+                </Button>
+              ) : null}
 
               {(cart?.length ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
@@ -175,7 +185,7 @@ const MainLayout = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="hidden md:flex md:items-center md:space-x-2">
+              <div className="hidden md:flex md:items-center ">
                 <Button variant="ghost" asChild>
                   <Link to="/login">
                     <LogIn className="mr-2 h-4 w-4" />
@@ -187,6 +197,15 @@ const MainLayout = () => {
                 </Button>
               </div>
             )}
+
+            {!user && (
+              <Button variant="ghost" asChild className="lg:hidden md:hidden">
+                <Link to="/login">
+                  <LogIn className="mr-2 h-4 w-4" /> Log in
+                </Link>
+              </Button>
+            )}
+
             {/* {/* Mobile Menu */}
             {/* <Sheet> */}
             {/*   <SheetTrigger asChild> */}
