@@ -365,10 +365,7 @@ function CourseVideoPlayerPage() {
         </div>
         <div className="flex flex-col flex-1">
           {/* Video player section */}
-          <div
-            onClick={() => window.scrollTo(0, 0)}
-            className="bg-black flex items-center justify-center h-[70vh] mr-14"
-          >
+          <div className="bg-black flex items-center justify-center h-[35vh] sm:h-[50vh] md:h-[70vh]">
             <VideoPlayer
               ref={videoPlayerRef}
               lecture={course.sections
