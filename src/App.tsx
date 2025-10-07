@@ -22,6 +22,7 @@ import AllCourses from "./pages/course/AllCourses.tsx";
 import CategoryCourses from "./pages/course/CategoryCourses.tsx";
 import Loading from "./components/Loading.jsx";
 import InstructorProfilePage from "./pages/instructor/InstructorProfilePage.tsx";
+import CourseReviews from "./pages/course/CourseReviews.tsx";
 
 function App() {
   const { instructor, isLoading, user } = useAppContext();
@@ -50,6 +51,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/loading" element={<Loading />} />
             <Route path="/course/:id" element={<CourseDetails />} />
+            <Route path="/course/review/:id" element={<CourseReviews />} />
             <Route
               path="/instructor/:instructorId"
               element={<InstructorProfilePage />}
