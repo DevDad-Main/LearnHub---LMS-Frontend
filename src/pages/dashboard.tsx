@@ -354,12 +354,12 @@ const Dashboard = () => {
         </TabsContent>
       </Tabs>
 
-      {/* 🟩 Leave a Review Section (Horizontal Carousel) */}
+{/* 🟩 Leave a Review Section (Responsive Carousel) */}
       <div className="mt-16 border-t pt-10">
         <h3 className="text-2xl font-bold mb-6">Leave a Review</h3>
 
         {mergedCourses.filter(
-          (c) => c.progress?.isCompleted && !c.progress?.hasReview,
+          (c) => c.progress?.isCompleted && !c.progress?.hasReview
         ).length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">
@@ -368,30 +368,30 @@ const Dashboard = () => {
           </div>
         ) : (
           <div className="relative">
-            {/* Horizontal scroll container */}
-            <div className="flex gap-6 overflow-x-auto scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent pb-4">
+            {/* Horizontal scroll container with snap */}
+            <div className="flex gap-4 overflow-x-auto scrollbar-thin scrollbar-thumb-muted-foreground/30 scrollbar-track-transparent pb-4 snap-x snap-mandatory">
               {mergedCourses
                 .filter((c) => !c.progress?.hasReview)
                 .map((course) => (
                   <Card
                     key={course.course._id}
-                    className="min-w-[260px] flex-shrink-0 overflow-hidden hover:shadow-lg transition-shadow"
+                    className="flex-shrink-0 w-[80%] sm:w-[260px] snap-start overflow-hidden hover:shadow-lg transition-shadow"
                   >
-                    <div className="relative h-40 w-full">
+                    <div className="relative h-36 sm:h-40 w-full">
                       <img
                         src={course.course?.thumbnail}
                         alt={course.course?.title}
                         className="h-full w-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-black/30 flex items-end justify-start p-3">
-                        <h4 className="text-white font-semibold drop-shadow line-clamp-2">
+                      <div className="absolute inset-0 bg-black/30 flex items-end justify-start p-2 sm:p-3">
+                        <h4 className="text-white font-semibold drop-shadow line-clamp-2 text-sm sm:text-base">
                           {course.course?.title}
                         </h4>
                       </div>
                     </div>
 
-                    <CardContent className="pt-4">
-                      <p className="text-sm text-muted-foreground mb-4">
+                    <CardContent className="pt-3 sm:pt-4">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                         Instructor: {course.course?.instructor?.name}
                       </p>
 
@@ -400,7 +400,7 @@ const Dashboard = () => {
                           window.scrollTo({ top: 0, behavior: "instant" })
                         }
                         asChild
-                        className="w-full"
+                        className="w-full text-sm sm:text-base"
                       >
                         <Link to={`/course/review/${course.course._id}`}>
                           Leave a Review

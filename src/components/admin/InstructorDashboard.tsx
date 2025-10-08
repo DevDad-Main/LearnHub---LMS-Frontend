@@ -23,34 +23,37 @@ const InstructorDashboard = () => {
     courses,
     fetchInstructorsCourses,
     handleLogoutInstructor,
+    setCourses,
   } = useAppContext();
   // const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const fetchInstructorsCourses = async () => {
-  //     try {
-  //       const { data } = await axios.get("/api/v1/instructor/courses", {
-  //         instructor,
-  //       });
-  //
-  //       if (data.success) {
-  //         console.log(data.courses);
-  //         setCourses(data.courses);
-  //       } else {
-  //         console.log(data.message);
-  //       }
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-  //   fetchInstructorsCourses();
-  // }, []);
-
   useEffect(() => {
-    // if (!instructor) return;
+    const fetchInstructorsCourses = async () => {
+      try {
+        const { data } = await axios.get("/api/v1/instructor/courses", {
+          instructor,
+        });
+
+        if (data.success) {
+          console.log(data.courses);
+          setCourses(data.courses);
+        } else {
+          console.log(data.message);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
     fetchInstructorsCourses();
   }, [instructor]);
+  //
+  // useEffect(() => {
+  //   if (instructor && (!courses || courses.length === 0)) {
+  //     fetchInstructorsCourses();
+  //   }
+  // }, [instructor, courses]);
+
 
   const handleCreateCourse = () => {
     navigate("/instructor/course/create");

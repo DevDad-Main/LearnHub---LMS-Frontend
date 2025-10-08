@@ -68,7 +68,9 @@ export const AppContextProvider = ({ children }) => {
       );
       if (data.success) {
         setInstructor(data.instructor);
+
       }
+      await fetchInstructorsCourses();
     } catch (error) {
       toast({
         title: error.message,
@@ -104,27 +106,30 @@ export const AppContextProvider = ({ children }) => {
   //#endregion
 
   //#region Handle Instructor Logout
-  const handleLogoutInstructor = async () => {
-    try {
-      const { data } = await axios.get("/api/v1/instructor/signout");
+// inside AppContext.js (or where your global state lives)
+const handleLogoutInstructor = async () => {
+  try {
+    const { data } = await axios.get("/api/v1/instructor/signout");
 
-      if (data.success) {
-        if (user?.authProvider === "google") {
-          // clears the Google OAuth session and above becuase if we have a success we clear the cookies aswell
-          googleLogout();
-        }
-
-        navigate("/");
-        setInstructor(null);
-        setCart([]);
-        toast.success(data.message);
-      } else {
-        toast.error(data.message);
+    if (data.success) {
+      if (user?.authProvider === "google") {
+        googleLogout();
       }
-    } catch (error) {
-      toast.error(error.message);
+
+      // Clear all relevant data
+      setInstructor(null);
+      setCourses([]); // ✅ clear instructor courses
+      setCart([]);
+      toast.success(data.message);
+
+      navigate("/");
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
   //#endregion
 
   //#region Get Logged in admin/instructor courses
