@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Star, ThumbsUp, User } from "lucide-react";
+import { Star, ThumbsUp, Trash, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,71 +22,7 @@ interface Review {
 }
 
 const MOCK_REVIEWS: Review[] = [
-  {
-    _id: "1",
-    user: {
-      _id: "u1",
-      name: "Sarah Johnson",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-    },
-    rating: 5,
-    comment:
-      "This course exceeded my expectations! The instructor explains complex concepts in a very clear and engaging way. I've learned so much and can already apply these skills in my projects.",
-    createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    helpful: 12,
-  },
-  {
-    _id: "2",
-    user: {
-      _id: "u2",
-      name: "Michael Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Michael",
-    },
-    rating: 4,
-    comment:
-      "Great course overall! The content is well-structured and the examples are practical. Would have loved more advanced topics, but definitely worth the investment.",
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    helpful: 8,
-  },
-  {
-    _id: "3",
-    user: {
-      _id: "u3",
-      name: "Emily Rodriguez",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily",
-    },
-    rating: 5,
-    comment:
-      "Absolutely fantastic! As a beginner, I was worried I wouldn't keep up, but the instructor made everything so accessible. The hands-on projects really helped solidify my understanding.",
-    createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-    helpful: 15,
-  },
-  {
-    _id: "4",
-    user: {
-      _id: "u4",
-      name: "David Kim",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=David",
-    },
-    rating: 3,
-    comment:
-      "Good course but could use more real-world examples. The theory is solid but I would have appreciated more practical applications.",
-    createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    helpful: 3,
-  },
-  {
-    _id: "5",
-    user: {
-      _id: "u5",
-      name: "Jessica Martinez",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jessica",
-    },
-    rating: 5,
-    comment:
-      "Best investment I've made in my career! The course content is up-to-date, comprehensive, and the instructor is incredibly knowledgeable. Highly recommend!",
-    createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    helpful: 20,
-  },
+  // ... (same mock data)
 ];
 
 const CourseReviews = () => {
@@ -99,13 +35,22 @@ const CourseReviews = () => {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [userEnrolled, setUserEnrolled] = useState(false);
 
   const totalReviews = reviews.length;
   const averageRating =
     totalReviews > 0
       ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
       : 0;
-  const userEnrolled = user?.enrolledCourses?.find((c) => c.course === id);
+
+  useEffect(() => {
+    if (user && user.enrolledCourses && id) {
+      const enrolled = user.enrolledCourses.some(
+        (c: any) => c.course === id || c.course?._id === id
+      );
+      setUserEnrolled(enrolled);
+    }
+  }, [user, id]);
 
   useEffect(() => {
     fetchReviews();
@@ -115,21 +60,13 @@ const CourseReviews = () => {
     try {
       const { data } = await axios.get(`/api/v1/review/course/review/${id}`);
       if (data.success) {
-        console.log(data.reviews);
         setReviews(data.reviews || []);
-        // setReviews(
-        //   (data.reviews || []).sort(
-        //     (a: Review, b: Review) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        //   )
-        // );
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      // fallback mock data sorted newest first
       setReviews(
         [...MOCK_REVIEWS].sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         ),
       );
     }
@@ -172,12 +109,11 @@ const CourseReviews = () => {
       if (data.review) {
         setReviews((prev) =>
           [data.review, ...prev].sort(
-            (a, b) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           ),
         );
       } else {
-        fetchReviews(); // fallback
+        fetchReviews();
       }
     } catch (error: any) {
       toast({
@@ -190,12 +126,26 @@ const CourseReviews = () => {
     }
   };
 
-  const handleHelpful = (reviewId: string) => {
-    setReviews(
-      reviews.map((r) =>
-        r._id === reviewId ? { ...r, helpful: r.helpful + 1 } : r,
-      ),
-    );
+  // 🟢 NEW: Delete review handler
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+
+    try {
+      const { data } = await axios.delete(`/api/v1/review/course/${id}/review/${reviewId}`);
+      if (data.success) {
+        setReviews((prev) => prev.filter((r) => r._id !== reviewId));
+        toast({
+          title: "Review Deleted",
+          description: "Your review has been successfully removed.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete review.",
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -385,15 +335,30 @@ const CourseReviews = () => {
                         <p className="text-sm leading-relaxed">
                           {review.comment}
                         </p>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleHelpful(review._id)}
-                          className="text-muted-foreground hover:text-primary"
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-2" />
-                          Helpful ({review.helpful || 0})
-                        </Button>
+                        <div className="flex gap-2">
+                          {/* <Button */}
+                          {/*   variant="ghost" */}
+                          {/*   size="sm" */}
+                          {/*   onClick={() => handleHelpful(review._id)} */}
+                          {/*   className="text-muted-foreground hover:text-primary" */}
+                          {/* > */}
+                          {/*   <ThumbsUp className="h-4 w-4 mr-2" /> */}
+                          {/*   Helpful ({review.helpful || 0}) */}
+                          {/* </Button> */}
+
+                          {/* 🟢 NEW: Delete Button */}
+                          {user?._id === review.user._id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteReview(review._id)}
+                              className="text-red-500 hover:text-red-600"
+                            >
+                            <Trash className="h-4 w-4 mr-2" />
+                              Delete Review
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>

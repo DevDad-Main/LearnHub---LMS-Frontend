@@ -26,6 +26,8 @@ import {
   Smartphone,
   Download,
   Infinity,
+  User,
+  ThumbsUp,
 } from "lucide-react";
 import { useAppContext } from "../../context/AppContext.jsx";
 
@@ -532,17 +534,158 @@ const CourseDetails = () => {
                 </Card>
               </TabsContent>
 
-              <TabsContent value="reviews">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Student Reviews</CardTitle>
-                    <CardDescription>
-                      {course?.reviewCount?.toLocaleString()} reviews for this
-                      course
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
-              </TabsContent>
+<TabsContent value="reviews">
+  <Card className="p-6">
+    <CardHeader className="pb-4">
+      <CardTitle className="text-2xl font-bold">Student Reviews</CardTitle>
+      <CardDescription>
+        {course?.reviews?.length
+          ? `${course.reviews.length} review${course.reviews.length !== 1 ? "s" : ""} for this course`
+          : "No reviews yet for this course"}
+      </CardDescription>
+    </CardHeader>
+
+    <CardContent className="space-y-8">
+      {/* Rating Summary */}
+      {course?.reviews?.length ? (
+        <>
+          <div className="grid md:grid-cols-2 gap-8 pb-8 border-b">
+            {/* Average rating */}
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="text-6xl font-bold">
+                {(
+                  course.reviews.reduce(
+                    (sum: number, r: any) => sum + r.rating,
+                    0
+                  ) / course.reviews.length
+                ).toFixed(1)}
+              </div>
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`h-6 w-6 ${
+                      star <=
+                      Math.round(
+                        course.reviews.reduce(
+                          (sum: number, r: any) => sum + r.rating,
+                          0
+                        ) / course.reviews.length
+                      )
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-muted-foreground">
+                Average rating based on {course.reviews.length}{" "}
+                {course.reviews.length === 1 ? "review" : "reviews"}
+              </p>
+            </div>
+
+            {/* Rating Distribution */}
+            <div className="flex items-center">
+              <div className="w-full space-y-2">
+                {[5, 4, 3, 2, 1].map((stars) => {
+                  const count = course.reviews.filter(
+                    (r: any) => r.rating === stars
+                  ).length;
+                  const percentage =
+                    (count / course.reviews.length) * 100 || 0;
+                  return (
+                    <div key={stars} className="flex items-center gap-3">
+                      <div className="flex items-center gap-1 w-16">
+                        <span className="text-sm font-medium">{stars}</span>
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      </div>
+                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-yellow-400 transition-all"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-sm text-muted-foreground w-12 text-right">
+                        {count}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Reviews List */}
+          <div className="space-y-6">
+            {course.reviews.map((review: any) => (
+              <Card
+                key={review._id}
+                className="hover:shadow-md transition-shadow"
+              >
+                <CardContent className="pt-6">
+                  <div className="flex gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={review.user?.avatar || ""} />
+                      <AvatarFallback>
+                        <User className="h-6 w-6" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h4 className="font-semibold">
+                            {review.user?.name || "Anonymous"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(review.createdAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= review.rating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      <p className="text-sm leading-relaxed">
+                        {review.comment}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      ) : (
+        // Empty state
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <Star className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold">No Reviews Yet</h3>
+          <p className="text-muted-foreground max-w-md">
+            This course hasn’t received any reviews yet. Be the first to share
+            your experience and help others decide!
+          </p>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
             </Tabs>
           </div>
 
