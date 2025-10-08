@@ -21,11 +21,6 @@ interface Review {
   helpful: number;
 }
 
-interface CourseReviewsProps {
-  userEnrolled?: boolean;
-}
-
-// Mock test data
 const MOCK_REVIEWS: Review[] = [
   {
     _id: "1",
@@ -94,23 +89,25 @@ const MOCK_REVIEWS: Review[] = [
   },
 ];
 
-const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
+const CourseReviews = () => {
   const { id } = useParams();
-  const { axios } = useAppContext();
+  const { axios, user } = useAppContext();
   const { toast } = useToast();
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
 
-  const averageRating =
-    reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
   const totalReviews = reviews.length;
+  const averageRating =
+    totalReviews > 0
+      ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
+      : 0;
+  const userEnrolled = user?.enrolledCourses?.find((c) => c.course === id);
 
   useEffect(() => {
-    // Uncomment this when backend is ready
     fetchReviews();
   }, [id]);
 
@@ -118,16 +115,23 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
     try {
       const { data } = await axios.get(`/api/v1/review/course/review/${id}`);
       if (data.success) {
-        toast({
-          title: "Review Submitted",
-          description: "Thank you for your feedback!",
-        });
+        console.log(data.reviews);
         setReviews(data.reviews || []);
+        // setReviews(
+        //   (data.reviews || []).sort(
+        //     (a: Review, b: Review) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        //   )
+        // );
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      // Fallback to mock data
-      // setReviews(MOCK_REVIEWS);
+      // fallback mock data sorted newest first
+      setReviews(
+        [...MOCK_REVIEWS].sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        ),
+      );
     }
   };
 
@@ -140,7 +144,6 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
       });
       return;
     }
-
     if (!comment.trim()) {
       toast({
         variant: "destructive",
@@ -151,37 +154,8 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
     }
 
     setIsSubmitting(true);
-
-    // Mock submission for testing
-    const newReview: Review = {
-      _id: String(reviews.length + 1),
-      user: {
-        _id: "current-user",
-        name: "You",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=You",
-      },
-      rating,
-      comment: comment.trim(),
-      createdAt: new Date().toISOString(),
-      helpful: 0,
-    };
-
-    setReviews([newReview, ...reviews]);
-
-    toast({
-      title: "Review Submitted",
-      description: "Thank you for your feedback!",
-    });
-
-    setRating(0);
-    setComment("");
-    setShowReviewForm(false);
-    setIsSubmitting(false);
-
-    // Uncomment when backend is ready
-    /*
     try {
-      await axios.post(`/api/v1/review/course/review/${id}`, {
+      const { data } = await axios.post(`/api/v1/review/course/review/${id}`, {
         rating,
         comment: comment.trim(),
       });
@@ -194,7 +168,17 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
       setRating(0);
       setComment("");
       setShowReviewForm(false);
-      fetchReviews();
+
+      if (data.review) {
+        setReviews((prev) =>
+          [data.review, ...prev].sort(
+            (a, b) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          ),
+        );
+      } else {
+        fetchReviews(); // fallback
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -204,26 +188,14 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
     } finally {
       setIsSubmitting(false);
     }
-    */
   };
 
-  const handleHelpful = async (reviewId: string) => {
-    // Mock helpful increment
+  const handleHelpful = (reviewId: string) => {
     setReviews(
       reviews.map((r) =>
         r._id === reviewId ? { ...r, helpful: r.helpful + 1 } : r,
       ),
     );
-
-    // Uncomment when backend is ready
-    /*
-    try {
-      await axios.post(`/api/v1/course/review/${reviewId}/helpful`);
-      fetchReviews();
-    } catch (error) {
-      console.error("Error marking review as helpful:", error);
-    }
-    */
   };
 
   const formatDate = (dateString: string) => {
@@ -243,31 +215,25 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
     value: number;
     onChange?: (rating: number) => void;
     readonly?: boolean;
-  }) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            disabled={readonly}
-            onClick={() => onChange && onChange(star)}
-            onMouseEnter={() => !readonly && setHoverRating(star)}
-            onMouseLeave={() => !readonly && setHoverRating(0)}
-            className={`transition-all ${readonly ? "cursor-default" : "cursor-pointer hover:scale-110"}`}
-          >
-            <Star
-              className={`h-6 w-6 ${
-                star <= (hoverRating || value)
-                  ? "fill-yellow-400 text-yellow-400"
-                  : "text-gray-300"
-              }`}
-            />
-          </button>
-        ))}
-      </div>
-    );
-  };
+  }) => (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          disabled={readonly}
+          onClick={() => onChange && onChange(star)}
+          onMouseEnter={() => !readonly && setHoverRating(star)}
+          onMouseLeave={() => !readonly && setHoverRating(0)}
+          className={`transition-all ${readonly ? "cursor-default" : "cursor-pointer hover:scale-110"}`}
+        >
+          <Star
+            className={`h-6 w-6 ${star <= (hoverRating || value) ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
 
   const RatingDistribution = () => {
     const distribution = [5, 4, 3, 2, 1].map((stars) => {
@@ -310,7 +276,7 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
           <div className="grid md:grid-cols-2 gap-8 pb-8 border-b">
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="text-6xl font-bold">
-                {averageRating.toFixed(1)}
+                {averageRating.toFixed(1) || 0}
               </div>
               <StarRating value={Math.round(averageRating)} readonly />
               <p className="text-muted-foreground">
@@ -399,7 +365,7 @@ const CourseReviews = ({ userEnrolled = false }: CourseReviewsProps) => {
                   <CardContent className="pt-6">
                     <div className="flex gap-4">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={review.user.avatar} />
+                        <AvatarImage src={review.user?.avatar || ""} />
                         <AvatarFallback>
                           <User className="h-6 w-6" />
                         </AvatarFallback>
