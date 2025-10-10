@@ -45,22 +45,13 @@ interface CourseGridProps {
   courses?: Course[];
 }
 
-const CourseGrid = ({ courses: initialCourses = [] }: CourseGridProps) => {
+const CourseGrid = ({ courses }: CourseGridProps) => {
   const { axios } = useAppContext();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [levelFilter, setLevelFilter] = useState<string>("all");
-  const [courses, setCourses] = useState<Course[]>(initialCourses);
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (initialCourses.length === 0) {
-  //     fetchCourses();
-  //   } else {
-  //     setCourses(initialCourses);
-  //   }
-  // }, [initialCourses]);
 
   const filteredCourses = courses.filter((course) => {
     const matchesSearch =
@@ -169,14 +160,14 @@ const CourseGrid = ({ courses: initialCourses = [] }: CourseGridProps) => {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="all">
-              All Courses ({courses.length})
+              All Courses ({courses?.length})
             </TabsTrigger>
             <TabsTrigger value="published">
-              Published ({courses.filter((c) => c.isPublished).length})
+              Published ({courses?.filter((c) => c?.isPublished).length})
             </TabsTrigger>
-            <TabsTrigger value="draft">
-              Draft ({courses.filter((c) => c._id.includes("draft")).length})
-            </TabsTrigger>
+            {/* <TabsTrigger value="draft"> */}
+            {/*   Draft ({courses.filter((c) => c._id.includes("draft")).length}) */}
+            {/* </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="all" className="mt-0">

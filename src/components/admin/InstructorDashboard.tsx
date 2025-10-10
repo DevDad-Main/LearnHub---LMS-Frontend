@@ -17,23 +17,16 @@ import { useAppContext } from "../../context/AppContext";
 
 const InstructorDashboard = () => {
   const [activeTab, setActiveTab] = useState("courses");
-  const {
-    axios,
-    instructor,
-    courses,
-    fetchInstructorsCourses,
-    handleLogoutInstructor,
-    setCourses,
-  } = useAppContext();
+  const { axios, instructor, fetchInstructorsCourses, handleLogoutInstructor } =
+    useAppContext();
   // const [courses, setCourses] = useState([]);
   const navigate = useNavigate();
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
     const fetchInstructorsCourses = async () => {
       try {
-        const { data } = await axios.get("/api/v1/instructor/courses", {
-          instructor,
-        });
+        const { data } = await axios.get("/api/v1/instructor/courses");
 
         if (data.success) {
           console.log(data.courses);
@@ -46,14 +39,13 @@ const InstructorDashboard = () => {
       }
     };
     fetchInstructorsCourses();
-  }, [instructor]);
+  }, []);
   //
   // useEffect(() => {
   //   if (instructor && (!courses || courses.length === 0)) {
   //     fetchInstructorsCourses();
   //   }
   // }, [instructor, courses]);
-
 
   const handleCreateCourse = () => {
     navigate("/instructor/course/create");
