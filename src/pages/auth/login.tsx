@@ -33,10 +33,23 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log("Login attempt:", formData);
+    try {
+      const { data } = await axios.post(`/api/v1/users/signin`, formData);
+
+      if (data.success) {
+        console.log(data);
+        setUser(data.user);
+        toast.success("Logged in successfully");
+        navigate("/");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Login failed");
+    }
   };
 
   const onSubmitHandler = async (e) => {
